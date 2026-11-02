@@ -18,13 +18,11 @@ From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
 
 ```julia
 pkg> add https://github.com/jfeldbrugge/IntegralResurgence.jl
-pkg> add https://github.com/jfeldbrugge/IntegralResurgence.jl
 ```
 
 Or, equivalently, via the `Pkg` API:
 
 ```julia
-julia> using Pkg; Pkg.add(url = "https://github.com/jfeldbrugge/IntegralResurgence.jl")
 julia> using Pkg; Pkg.add(url = "https://github.com/jfeldbrugge/IntegralResurgence.jl")
 ```
 
@@ -88,8 +86,8 @@ When using this code in work, please cite
 
 @misc{Feldbrugge2026,
   author = {Feldbrugge, Job},
-  title = {IntegralResurgence.jl -- Julia implementation of resurgence for integrals},
-  title = {IntegralResurgence.jl -- Julia implementation of Resurgence for integrals},
+  title = {.jl -- Julia implementation of resurgence for integrals},
+  title = {.jl -- Julia implementation of Resurgence for integrals},
   year = {2026},
   month = {oct},
   doi = {10.5281/zenodo.23557502},
