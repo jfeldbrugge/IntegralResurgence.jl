@@ -86,8 +86,7 @@ When using this code in work, please cite
 
 @misc{Feldbrugge2026,
   author = {Feldbrugge, Job},
-  title = {.jl -- Julia implementation of resurgence for integrals},
-  title = {.jl -- Julia implementation of Resurgence for integrals},
+  title = {IntegralResurgence.jl -- Julia implementation of resurgence for integrals},
   year = {2026},
   month = {oct},
   doi = {10.5281/zenodo.23557502},
