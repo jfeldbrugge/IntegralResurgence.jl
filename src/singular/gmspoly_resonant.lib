@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-version="version gmspoly.lib 4.1.2.0 Feb_2019, patched for Resurgence.jl (resonant terms in glift) "; // $Id: b27adbe7809d78a2fbdb3361179238f229630648 $
+version="version gmspoly.lib 4.1.2.0 Feb_2019, patched for IntegralResurgence.jl (resonant terms in glift) "; // $Id: b27adbe7809d78a2fbdb3361179238f229630648 $
 category="Singularities";
 
 info="
@@ -424,7 +424,7 @@ static proc glift(ideal e,module V,matrix B,module G)
     }
 
     k=leadexp(N[j])[1]-leadexp(M[i])[1];
-    // Resurgence.jl patch: a resonant term (1-k-v[i]+v[j] = 0) cannot be removed by a
+    // IntegralResurgence.jl patch: a resonant term (1-k-v[i]+v[j] = 0) cannot be removed by a
     // change of basis; keep it in A instead of dividing by zero.
     if(k==0||i==j||(1-k-leadcoef(v[i])+leadcoef(v[j]))==0)
     {

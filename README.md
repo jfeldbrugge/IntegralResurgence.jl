@@ -1,8 +1,8 @@
-# Resurgence.jl
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://jfeldbrugge.github.io/Resurgence.jl/stable/)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jfeldbrugge.github.io/Resurgence.jl/dev/)
-[![Build Status](https://github.com/jfeldbrugge/Resurgence.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jfeldbrugge/Resurgence.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![Coverage](https://codecov.io/gh/jfeldbrugge/Resurgence.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/jfeldbrugge/Resurgence.jl)
+# IntegralResurgence.jl
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://jfeldbrugge.github.io/IntegralResurgence.jl/stable/)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jfeldbrugge.github.io/IntegralResurgence.jl/dev/)
+[![Build Status](https://github.com/jfeldbrugge/IntegralResurgence.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jfeldbrugge/IntegralResurgence.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/jfeldbrugge/IntegralResurgence.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/jfeldbrugge/IntegralResurgence.jl)
 [![DOI](https://zenodo.org/badge/1392666884.svg)](https://doi.org/10.5281/zenodo.23557502)
 
 Multidimensional oscillatory integrals
@@ -13,24 +13,24 @@ with a polynomial (or, by a polynomial lift, rational) exponent $f$ are evaluate
 
 ## Installation
 
-The Resurgence package is not yet registered in the General registry, but can be installed directly from GitHub with the Julia package manager.
+The IntegralResurgence package is not yet registered in the General registry, but can be installed directly from GitHub with the Julia package manager.
 From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
 
 ```julia
-pkg> add https://github.com/jfeldbrugge/Resurgence.jl
+pkg> add https://github.com/jfeldbrugge/IntegralResurgence.jl
 ```
 
 Or, equivalently, via the `Pkg` API:
 
 ```julia
-julia> using Pkg; Pkg.add(url = "https://github.com/jfeldbrugge/Resurgence.jl")
+julia> using Pkg; Pkg.add(url = "https://github.com/jfeldbrugge/IntegralResurgence.jl")
 ```
 
 ## Usage
 For the Pearcey integral with exponent $f(q) = q^4 + q^2/2 + q$, we compute the asymptotic series and the Stokes constants of the saddle points, determine the relevant saddle points with the South-East rule and approximate the integral $\Psi(k)$ at $k = 6$ (exact value $\Psi(6) = -0.1148611265675526 - 0.4893380385050138i$) as follows:
 
 ```julia
-using Resurgence, DynamicPolynomials
+using IntegralResurgence, DynamicPolynomials
 
 @polyvar q
 f = q^4 + 1//2 * q^2 + q
@@ -86,7 +86,7 @@ When using this code in work, please cite
 
 @misc{Feldbrugge2026,
   author = {Feldbrugge, Job},
-  title = {Resurgence.jl -- Julia implementation of Resurgence for integrals},
+  title = {IntegralResurgence.jl -- Julia implementation of resurgence for integrals},
   year = {2026},
   month = {oct},
   doi = {10.5281/zenodo.23557502},

@@ -1,4 +1,4 @@
-module Resurgence
+module IntegralResurgence
 
     using DynamicPolynomials, MultivariatePolynomials, LinearAlgebra, GenericSchur, HomotopyContinuation,
         SpecialFunctions, QuadGK, CairoMakie

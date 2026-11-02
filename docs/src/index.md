@@ -1,10 +1,10 @@
 ```@meta
-CurrentModule = Resurgence
+CurrentModule = IntegralResurgence
 ```
 
-# Resurgence
+# IntegralResurgence
 
-Documentation for [Resurgence.jl](https://github.com/jfeldbrugge/Resurgence.jl).
+Documentation for [IntegralResurgence.jl](https://github.com/jfeldbrugge/IntegralResurgence.jl).
 
 Multidimensional oscillatory integrals
 
@@ -16,17 +16,17 @@ with a polynomial (or, by a polynomial lift, rational) exponent $f$ are evaluate
 
 ## Installation
 
-The Resurgence package is not yet registered in the General registry, but can be installed directly from GitHub with the Julia package manager.
+The IntegralResurgence package is not yet registered in the General registry, but can be installed directly from GitHub with the Julia package manager.
 From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
 
 ```julia
-pkg> add https://github.com/jfeldbrugge/Resurgence.jl
+pkg> add https://github.com/jfeldbrugge/IntegralResurgence.jl
 ```
 
 Or, equivalently, via the `Pkg` API:
 
 ```julia
-julia> using Pkg; Pkg.add(url = "https://github.com/jfeldbrugge/Resurgence.jl")
+julia> using Pkg; Pkg.add(url = "https://github.com/jfeldbrugge/IntegralResurgence.jl")
 ```
 
 ## Usage
@@ -34,7 +34,7 @@ julia> using Pkg; Pkg.add(url = "https://github.com/jfeldbrugge/Resurgence.jl")
 For the Pearcey integral with exponent $f(q) = q^4 + q^2/2 + q$, we compute the asymptotic series and the Stokes constants of the saddle points, determine the relevant saddle points with the South-East rule and approximate the integral $\Psi(k)$ at $k = 6$ (exact value $\Psi(6) = -0.1148611265675526 - 0.4893380385050138i$) as follows:
 
 ```julia
-using Resurgence, DynamicPolynomials
+using IntegralResurgence, DynamicPolynomials
 
 @polyvar q
 f = q^4 + 1//2 * q^2 + q

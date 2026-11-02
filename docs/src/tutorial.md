@@ -1,10 +1,10 @@
 ```@meta
-CurrentModule = Resurgence
+CurrentModule = IntegralResurgence
 ```
 
 # Tutorial
 
-In this tutorial, we demonstrate the main features of Resurgence.jl with two examples: the Pearcey integral, a one-dimensional integral with three saddle points, and the Lorentzian lens of wave optics, a rational exponent that we treat through a polynomial lift (Sec. VII B of the paper).
+In this tutorial, we demonstrate the main features of IntegralResurgence.jl with two examples: the Pearcey integral, a one-dimensional integral with three saddle points, and the Lorentzian lens of wave optics, a rational exponent that we treat through a polynomial lift (Sec. VII B of the paper).
 
 All computations run in extended precision. The asymptotic series are computed in `BigFloat`, and the approximations of the integral, [`superasymptotic`](@ref), [`hyperasymptotic`](@ref) and [`BorelPadeResum`](@ref), run in the precision of the wavenumber $k$: passing `k::BigFloat` gives results far beyond double precision, which we compare with the exact integrals computed in `BigFloat` as well.
 
@@ -21,7 +21,7 @@ We consider the Pearcey integral
 The exponent has three saddle points, the roots of $f'(q) = 4q^3 + q + 1$: one real saddle point at $q = -1/2$ and a complex conjugate pair. They can be found numerically with [`findAllSaddles`](@ref) and refined to high precision with [`refineSaddle`](@ref); here, we supply them exactly.
 
 ```@example pearcey
-using Resurgence, DynamicPolynomials, CairoMakie
+using IntegralResurgence, DynamicPolynomials, CairoMakie
 setprecision(BigFloat, 256)
 
 @polyvar q
@@ -119,7 +119,7 @@ The real saddle point switches on one of the two complex saddle points, the one 
 The exact integral follows from a quadrature in `BigFloat` along the rotated line $q = e^{i\pi/8} u$, on which $e^{ikq^4}$ decays as $e^{-ku^4}$; the integrand has no singularities, so the rotation does not change the integral:
 
 ```@example pearcey
-const QuadGK = Resurgence.QuadGK
+const QuadGK = IntegralResurgence.QuadGK
 
 fn(u) = u^4 + u^2 / 2 + u
 function exact(k)
@@ -188,7 +188,7 @@ f(x_1, x_2, x_3) = P(x_1)\, x_2 + x_3 \left(x_2\, Q(x_1) - 1\right).
 ### Gauss–Manin system and Stokes constants
 
 ```@example lens
-using Resurgence, DynamicPolynomials, MultivariatePolynomials, LinearAlgebra, CairoMakie
+using IntegralResurgence, DynamicPolynomials, MultivariatePolynomials, LinearAlgebra, CairoMakie
 setprecision(BigFloat, 512)                       # for the saddle points and the Gauss-Manin system
 
 y, β = 1, 1
@@ -245,7 +245,7 @@ The exact integral follows from a quadrature in `BigFloat` along the rotated lin
 
 ```@example lens
 setprecision(BigFloat, 256)                       # for the approximations
-const QuadGK = Resurgence.QuadGK
+const QuadGK = IntegralResurgence.QuadGK
 
 fd(x) = (x - y)^2 / 2 + β / (1 + x^2)
 function exact(k)

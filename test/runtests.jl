@@ -1,4 +1,4 @@
-using Resurgence
+using IntegralResurgence
 using DynamicPolynomials, MultivariatePolynomials, LinearAlgebra
 using Test
 
@@ -52,7 +52,7 @@ Kpaper = [ 0  0 -1  2 -1;
           -2 -1  1  0  1;
            1  2 -1 -1  0]
 
-@testset "Resurgence.jl: Lorentzian lens" begin
+@testset "IntegralResurgence.jl: Lorentzian lens" begin
 
     # ---------------------------------------------------------------- saddle points
     progress("finding and refining the saddle points")
@@ -205,8 +205,8 @@ end
     for (m, z) in ((1, 0.3 + 0.2im), (5, 0.8 - 0.5im), (20, -14.5 + 37.3im), (30, -29.0 + 1.0im), (40, 25.0 + 0.0im),
                    (12, -3.0 + 0.01im), (60, -50.0 - 20.0im), (3, 0.5 + 90.0im))
         zb = Complex{BigFloat}(z)
-        ref = Resurgence.SpecialFunctions.expint(m, zb)
-        @test abs(Resurgence._expint(m, zb) - ref) < 1e-90 * abs(ref)
+        ref = IntegralResurgence.SpecialFunctions.expint(m, zb)
+        @test abs(IntegralResurgence._expint(m, zb) - ref) < 1e-90 * abs(ref)
     end
 end
 
@@ -214,7 +214,7 @@ end
 # directions, so that the keyhole paths of K_{j←i} and K_{i←j} are homotopic to the same segment.
 @testset "keyhole paths around a nearby singular point" begin
     for σ3 in (1 + 0.01im, 1 - 0.01im), (i, j) in ((1, 2), (2, 1))
-        γ, _ = Resurgence.keyhole_paths(ComplexF64[0, 2, σ3], i, j)
+        γ, _ = IntegralResurgence.keyhole_paths(ComplexF64[0, 2, σ3], i, j)
         arcpts = [z for z in γ if abs(z - σ3) < 0.5]
         @test all(sign(imag(z - σ3)) == -sign(imag(σ3)) for z in arcpts if abs(real(z - σ3)) < 0.1)
     end
@@ -224,7 +224,7 @@ end
 # radial cut along the ray (Stokes line), a curved arc of poles across the ray (dense and sparse), a
 # Froissart doublet.
 @testset "Laplace direction around Padé poles" begin
-    dir(p, z = ComplexF64[]; kw...) = Resurgence.laplace_direction(p, z, 0.0; kw...)
+    dir(p, z = ComplexF64[]; kw...) = IntegralResurgence.laplace_direction(p, z, 0.0; kw...)
     @test dir([1.0im, -2.0 + 0im]) == (0.0, 0.0)
     δθ, w = dir([2.0 + 0im, 3.0 + 0im, 2.0im])
     @test abs(δθ - π / 4) < 0.01 && w < 0.04                       # lateral sum, as before

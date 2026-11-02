@@ -1,10 +1,10 @@
 ```@meta
-CurrentModule = Resurgence
+CurrentModule = IntegralResurgence
 ```
 
 # Theory
 
-Resurgence.jl evaluates oscillatory integrals
+IntegralResurgence.jl evaluates oscillatory integrals
 
 ```math
 \Psi(k) = \left(\frac{k}{2\pi i}\right)^{d/2} \int_{\mathbb{R}^d} e^{i k f(\boldsymbol{x})}\, \mathrm{d}\boldsymbol{x}

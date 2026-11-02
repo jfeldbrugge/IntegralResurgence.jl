@@ -67,6 +67,6 @@ jobs:
         shell: julia --project=docs --color=yes {0}
         run: |
           using Documenter: DocMeta, doctest
-          using Resurgence
-          DocMeta.setdocmeta!(Resurgence, :DocTestSetup, :(using Resurgence); recursive=true)
-          doctest(Resurgence)
+          using IntegralResurgence
+          DocMeta.setdocmeta!(IntegralResurgence, :DocTestSetup, :(using IntegralResurgence); recursive=true)
+          doctest(IntegralResurgence)

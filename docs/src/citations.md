@@ -1,5 +1,5 @@
 ```@meta
-CurrentModule = Resurgence
+CurrentModule = IntegralResurgence
 ```
 
 # Citations
@@ -18,7 +18,7 @@ This code accompanies the publication [Asymptotic evaluation of multidimensional
 
 @misc{Feldbrugge2026,
   author = {Feldbrugge, Job},
-  title = {Resurgence.jl -- Julia implementation of Resurgence for integrals},
+  title = {IntegralResurgence.jl -- Julia implementation of resurgence for integrals},
   year = {2026},
   month = {oct},
   doi = {10.5281/zenodo.23557502},

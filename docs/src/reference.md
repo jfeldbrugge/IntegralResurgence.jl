@@ -1,5 +1,5 @@
 ```@meta
-CurrentModule = Resurgence
+CurrentModule = IntegralResurgence
 ```
 
 # Reference
@@ -59,7 +59,7 @@ path_lengths
 ## Internals
 
 ```@autodocs
-Modules = [Resurgence]
+Modules = [IntegralResurgence]
 Public = false
 ```
 
