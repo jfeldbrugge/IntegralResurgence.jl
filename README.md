@@ -3,6 +3,11 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jfeldbrugge.github.io/IntegralResurgence.jl/dev/)
 [![Build Status](https://github.com/jfeldbrugge/IntegralResurgence.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jfeldbrugge/IntegralResurgence.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/jfeldbrugge/IntegralResurgence.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/jfeldbrugge/IntegralResurgence.jl)
+# IntegralResurgence.jl
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://jfeldbrugge.github.io/IntegralResurgence.jl/stable/)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jfeldbrugge.github.io/IntegralResurgence.jl/dev/)
+[![Build Status](https://github.com/jfeldbrugge/IntegralResurgence.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jfeldbrugge/IntegralResurgence.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/jfeldbrugge/IntegralResurgence.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/jfeldbrugge/IntegralResurgence.jl)
 [![DOI](https://zenodo.org/badge/1392666884.svg)](https://doi.org/10.5281/zenodo.23557502)
 
 Multidimensional oscillatory integrals
@@ -18,11 +23,13 @@ From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
 
 ```julia
 pkg> add https://github.com/jfeldbrugge/IntegralResurgence.jl
+pkg> add https://github.com/jfeldbrugge/IntegralResurgence.jl
 ```
 
 Or, equivalently, via the `Pkg` API:
 
 ```julia
+julia> using Pkg; Pkg.add(url = "https://github.com/jfeldbrugge/IntegralResurgence.jl")
 julia> using Pkg; Pkg.add(url = "https://github.com/jfeldbrugge/IntegralResurgence.jl")
 ```
 
@@ -87,6 +94,7 @@ When using this code in work, please cite
 @misc{Feldbrugge2026,
   author = {Feldbrugge, Job},
   title = {IntegralResurgence.jl -- Julia implementation of resurgence for integrals},
+  title = {IntegralResurgence.jl -- Julia implementation of Resurgence for integrals},
   year = {2026},
   month = {oct},
   doi = {10.5281/zenodo.23557502},
