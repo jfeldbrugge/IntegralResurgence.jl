@@ -1,5 +1,6 @@
 using IntegralResurgence
 using DynamicPolynomials, MultivariatePolynomials, LinearAlgebra
+using CairoMakie                                   # loads the plotting extension
 using Test
 
 # The one-dimensional Lorentzian lens (y = β = 1),
@@ -131,7 +132,7 @@ Kpaper = [ 0  0 -1  2 -1;
         @test all(length(poles[j]) == 49 for j in 1:5)
         K_bp = round.(Int, real.(findStokesConstants(bp_trans)))
         # the detected edges belong to the adjacency graph of the Fuchsian system
-        # (findStokesConstants is transposed with respect to stokes_constants)
+        # (findStokesConstants equals -transpose of stokes_constants)
         @test count(!iszero, K_bp) >= 4
         @test all((K_bp .!= 0) .<= transpose(Kref .!= 0))
         @test plotAdjacencyPoles(bp_trans, K_bp, poles) isa Tuple
@@ -150,6 +151,24 @@ Kpaper = [ 0  0 -1  2 -1;
         @test K == -transpose(K)
         @test plotStokesGraphGM(Σ, K) isa Tuple
         @test plotAdjacencyGM(Σ, K) isa Tuple
+    end
+
+    # ---------------------------------------------------------------- conventions (Pearcey integral)
+    progress("Borel-Padé and Fuchsian Stokes constants: conventions (Pearcey integral)")
+    @testset "Stokes constant conventions" begin
+        @polyvar q
+        fP = q^4 + 1//2 * q^2 + q
+        s7 = sqrt(big(7))
+        sP = [[complex(-big(1)/2)], [(1 - s7 * im)/4], [(1 + s7 * im)/4]]
+        GMP = GaussManin(fP)
+        tP = transseries(fP, GMP, 40; saddles = sP)
+        ΣP = ComplexF64[s.f₀ for s in tP]
+        T0P = ComplexF64[s.Ts[1] for s in tP]
+        KP = round.(Int, real.(stokes_constants(ΣP, [ComplexF64.(R) for R in GMP.Rs], 0; T0 = T0P, method = :matrix)))
+        KbpP = round.(Int, real.(findStokesConstants(tP, 1e-2)))
+        @test KbpP == -transpose(KP)
+        nP = relevance(fP, ΣP, KP, T0P; saddles = sP)
+        @test southeast(ΣP, transpose(KbpP), nP.n0; convention = :paper) == nP.n
     end
 
     # ---------------------------------------------------------------- South-East rule
@@ -260,4 +279,7 @@ end
     @test abs(Sbent - Sa) > 1e-6                                    # the Stokes jump is not negligible
     @test BorelPadeResum(tq, j, Kq, 6.0)[1] == BorelPadeResum(tq[j], 6.0)[1]   # no crossing: unchanged
 end end
+progress("hyperlogarithms and the Stokes constants by every method")
+include("hyperlogarithms.jl")
+
 progress("done")

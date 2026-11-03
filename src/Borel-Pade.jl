@@ -20,7 +20,13 @@ function findPoles(trans)
 end
 
 """
-Find the Stokes constants
+    findStokesConstants(transseries, ϵ = 1e-2)
+
+Stokes constants from conformally mapped Borel-Padé approximants of the series `transseries` (a vector
+of `Expansion`s). `K[j, k]` is the constant with which the series of j sees the Borel singularity of k,
+zero when no Padé pole lies within `ϵ` of the singularity in the mapped variable. With the same
+normalisation of the series, `K == -transpose(stokes_constants(...))`, i.e. `transpose(K)` follows the
+paper convention of `southeast(Σ, transpose(K), n0; convention = :paper)`.
 """
 function findStokesConstants(transseries, ϵ = 1e-2)
     K = zeros(Complex{BigFloat}, (length(transseries), length(transseries)))

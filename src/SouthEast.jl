@@ -73,8 +73,9 @@ the intersection numbers n0 at θ = π/2 (see `initial_intersection_numbers`); r
 intersection numbers n at θ = 0, i.e. Ψ = Σ_j n_j Ψ^(j).
 
 - `convention = :package`: K[l, j] as returned by `stokes_constants` (update n_l -= n_j K[l, j]);
-  `convention = :paper`: K[l, j] = K_lj of the paper (update n_l += n_j K[l, j]). For the output of
-  `findStokesConstants` (transposed with respect to `stokes_constants`) pass `transpose(K)`.
+  `convention = :paper`: K[l, j] = K_lj of the paper (update n_l += n_j K[l, j]). The output of
+  `findStokesConstants` equals `-transpose` of `stokes_constants`, i.e. the paper convention
+  transposed: pass `transpose(K)` with `convention = :paper`.
 - K is rounded to integers (with a warning when it is not close to integers).
 - A warning is issued when a firing edge is horizontal (the integral lies on a Stokes line, where
   the jump is only half) or when two firing edges at the same angle share a saddle.
