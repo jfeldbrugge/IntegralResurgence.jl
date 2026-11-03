@@ -13,24 +13,25 @@ with a polynomial (or, by a polynomial lift, rational) exponent $f$ are evaluate
 
 ## Installation
 
-The IntegralResurgence package is not yet registered in the General registry, but can be installed directly from GitHub with the Julia package manager.
-From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
+Install IntegralResurgence from the General registry with the Julia package manager. From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
 
 ```julia
-pkg> add https://github.com/jfeldbrugge/IntegralResurgence.jl
+pkg> add IntegralResurgence
 ```
 
 Or, equivalently, via the `Pkg` API:
 
 ```julia
-julia> using Pkg; Pkg.add(url = "https://github.com/jfeldbrugge/IntegralResurgence.jl")
+julia> using Pkg; Pkg.add("IntegralResurgence")
 ```
+
+The plotting functions (`plotStokesGraphGM`, `plotAdjacencyGM`, `plotAdjacencyPoles`) live in a package extension, which loads together with a Makie backend. To draw the figures, install and load `CairoMakie` (or `GLMakie`); without a backend, the rest of the package installs and loads without Makie.
 
 ## Usage
 For the Pearcey integral with exponent $f(q) = q^4 + q^2/2 + q$, we compute the asymptotic series and the Stokes constants of the saddle points, determine the relevant saddle points with the South-East rule and approximate the integral $\Psi(k)$ at $k = 6$ (exact value $\Psi(6) = -0.1148611265675526 - 0.4893380385050138i$) as follows:
 
 ```julia
-using IntegralResurgence, DynamicPolynomials
+using IntegralResurgence, DynamicPolynomials, CairoMakie   # CairoMakie for plotStokesGraphGM
 
 @polyvar q
 f = q^4 + 1//2 * q^2 + q
