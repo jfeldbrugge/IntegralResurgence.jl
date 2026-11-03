@@ -1,7 +1,7 @@
 module IntegralResurgence
 
     using DynamicPolynomials, MultivariatePolynomials, LinearAlgebra, GenericSchur, HomotopyContinuation,
-        SpecialFunctions, QuadGK, CairoMakie
+        SpecialFunctions, QuadGK
     import Singular_jll, Polynomials
 
     include("Saddles.jl")
@@ -34,5 +34,14 @@ module IntegralResurgence
 
     # Plots
     export plotStokesGraphGM, plotAdjacencyGM, plotAdjacencyPoles
+
+    # Calling a plotting function without a Makie backend gives a MethodError; point to the extension.
+    function __init__()
+        Base.Experimental.register_error_hint(MethodError) do io, exc, argtypes, kwargs
+            if exc.f isa Function && nameof(exc.f) in MAKIE_FUNCTIONS && isnothing(Base.get_extension(IntegralResurgence, :IntegralResurgenceMakieExt))
+                print(io, "\n\n", nameof(exc.f), " needs a Makie backend. Load one first, e.g. `using CairoMakie`.")
+            end
+        end
+    end
 
 end
