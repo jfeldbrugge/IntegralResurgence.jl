@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="referrer" content="no-referrer"/><title>Tutorial · IntegralResurgence.jl</title><meta name="title" content="Tutorial · IntegralResurgence.jl"/><meta property="og:title" content="Tutorial · IntegralResurgence.jl"/><meta property="twitter:title" content="Tutorial · IntegralResurgence.jl"/><meta name="description" content="Documentation for IntegralResurgence.jl."/><meta property="og:description" content="Documentation for IntegralResurgence.jl."/><meta property="twitter:description" content="Documentation for IntegralResurgence.jl."/><meta property="og:url" content="https://jfeldbrugge.github.io/IntegralResurgence.jl/tutorial/"/><meta property="twitter:url" content="https://jfeldbrugge.github.io/IntegralResurgence.jl/tutorial/"/><link rel="canonical" href="https://jfeldbrugge.github.io/IntegralResurgence.jl/tutorial/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">IntegralResurgence.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../theory/">Theory</a></li><li class="is-active"><a class="tocitem" href>Tutorial</a><ul class="internal"><li><a class="tocitem" href="#The-Pearcey-integral"><span>The Pearcey integral</span></a></li><li><a class="tocitem" href="#The-Lorentzian-lens"><span>The Lorentzian lens</span></a></li></ul></li><li><a class="tocitem" href="../citations/">Citations</a></li><li><a class="tocitem" href="../reference/">Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Tutorial</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Tutorial</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/jfeldbrugge/IntegralResurgence.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/jfeldbrugge/IntegralResurgence.jl/blob/main/docs/src/tutorial.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Tutorial"><a class="docs-heading-anchor" href="#Tutorial">Tutorial</a><a id="Tutorial-1"></a><a class="docs-heading-anchor-permalink" href="#Tutorial" title="Permalink"></a></h1><p>In this tutorial, we demonstrate the main features of IntegralResurgence.jl with two examples: the Pearcey integral, a one-dimensional integral with three saddle points, and the Lorentzian lens of wave optics, a rational exponent that we treat through a polynomial lift (Sec. VII B of the paper).</p><p>All computations run in extended precision. The asymptotic series are computed in <code>BigFloat</code>, and the approximations of the integral, <a href="../reference/#IntegralResurgence.superasymptotic"><code>superasymptotic</code></a>, <a href="../reference/#IntegralResurgence.hyperasymptotic"><code>hyperasymptotic</code></a> and <a href="../reference/#IntegralResurgence.BorelPadeResum"><code>BorelPadeResum</code></a>, run in the precision of the wavenumber <span>$k$</span>: passing <code>k::BigFloat</code> gives results far beyond double precision, which we compare with the exact integrals computed in <code>BigFloat</code> as well.</p><h2 id="The-Pearcey-integral"><a class="docs-heading-anchor" href="#The-Pearcey-integral">The Pearcey integral</a><a id="The-Pearcey-integral-1"></a><a class="docs-heading-anchor-permalink" href="#The-Pearcey-integral" title="Permalink"></a></h2><p>We consider the Pearcey integral</p><p class="math-container">\[\Psi(k) = \sqrt{\frac{k}{2\pi i}} \int_{\mathbb{R}} e^{i k f(q)}\, \mathrm{d}q, \qquad f(q) = q^4 + \frac{q^2}{2} + q.\]</p><h3 id="Saddle-points-and-the-Gauss–Manin-system"><a class="docs-heading-anchor" href="#Saddle-points-and-the-Gauss–Manin-system">Saddle points and the Gauss–Manin system</a><a id="Saddle-points-and-the-Gauss–Manin-system-1"></a><a class="docs-heading-anchor-permalink" href="#Saddle-points-and-the-Gauss–Manin-system" title="Permalink"></a></h3><p>The exponent has three saddle points, the roots of <span>$f&#39;(q) = 4q^3 + q + 1$</span>: one real saddle point at <span>$q = -1/2$</span> and a complex conjugate pair. They can be found numerically with <a href="../reference/#IntegralResurgence.findAllSaddles"><code>findAllSaddles</code></a> and refined to high precision with <a href="../reference/#IntegralResurgence.refineSaddle"><code>refineSaddle</code></a>; here, we supply them exactly.</p><pre><code class="language-julia hljs">using IntegralResurgence, DynamicPolynomials, CairoMakie
+setprecision(BigFloat, 256)
+
+@polyvar q
+f = q^4 + 1//2 * q^2 + q
+
+s7 = sqrt(big(7))
+saddles = [[complex(-big(1)/2)], [(1 - s7 * im)/4], [(1 + s7 * im)/4]]</code></pre><p>The Gauss–Manin system follows from Singular&#39;s <code>gmspoly.lib</code>. It consists of the good basis <code>GM.ϕ</code> and the matrices <code>GM.M</code> and <code>GM.B</code>:</p><pre><code class="language-julia hljs">GM = GaussManin(f)
+GM.ϕ</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{DynamicPolynomials.Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}, Rational{BigInt}}}:
+ 1//1
+ q
+ 1//1 + 8//1q²</code></pre><pre><code class="language-julia hljs">GM.M</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3×3 Matrix{Rational{BigInt}}:
+  -1//32   3//4    1//32
+  -5//32  -1//16   3//32
+ -47//32  -5//4   -1//32</code></pre><pre><code class="language-julia hljs">GM.B</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3×3 Matrix{Rational{BigInt}}:
+ 1//4   0     0
+  0    1//2   0
+  0     0    3//4</code></pre><p>The eigenvalues of <span>$M$</span> are the critical values <span>$\lambda_j = f(q_j)$</span>:</p><pre><code class="language-julia hljs">ComplexF64.(GM.λs)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{ComplexF64}:
+ -0.3125 - 9.429468950322541e-78im
+ 0.09375 - 0.5787580992953792im
+ 0.09375 + 0.5787580992953792im</code></pre><h3 id="The-transseries"><a class="docs-heading-anchor" href="#The-transseries">The transseries</a><a id="The-transseries-1"></a><a class="docs-heading-anchor-permalink" href="#The-transseries" title="Permalink"></a></h3><p><a href="../reference/#IntegralResurgence.transseries"><code>transseries</code></a> computes the asymptotic series of all saddle points, ordered as <code>GM.λs</code>, as a vector of <a href="../reference/#IntegralResurgence.Expansion"><code>Expansion</code></a>s. Each expansion holds the saddle point <code>x</code>, the Borel singularity <code>f₀</code> <span>$= t_j = -i\lambda_j$</span>, the exponent <code>μ</code> and the coefficients <code>Ts</code>, normalised such that <code>Ts[1]</code> <span>$= 1/\sqrt{f&#39;&#39;(q_j)}$</span>. We compute the series to order 150, enough for the high-order Borel–Padé approximants and for the hyperasymptotic truncations below.</p><pre><code class="language-julia hljs">trans = transseries(f, GM, 150; saddles = saddles)
+Σ  = ComplexF64[s.f₀    for s in trans]        # Borel singularities t = -iλ
+T0 = ComplexF64[s.Ts[1] for s in trans]        # normalisation of the series
+Rs = [ComplexF64.(R) for R in GM.Rs]           # residues of the Fuchsian system
+Σ</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{ComplexF64}:
+ -9.429468950322541e-78 + 0.3125im
+    -0.5787580992953792 - 0.09375im
+     0.5787580992953792 - 0.09375im</code></pre><p>The coefficients grow factorially. On a logarithmic scale:</p><pre><code class="language-julia hljs">fig = Figure()
+ax = Axis(fig[1, 1], xlabel = &quot;m&quot;, ylabel = &quot;log₁₀ |Tₘ|&quot;)
+for (j, s) in enumerate(trans)
+    scatter!(ax, 0:length(s.Ts) - 1, Float64.(log10.(abs.(s.Ts))), label = &quot;saddle $j&quot;)
+end
+axislegend(ax, position = :lt)
+fig</code></pre><img src="e2f22157.png" alt="Example block output" width="600" height="450"/><h3 id="Adjacency:-the-Stokes-constants"><a class="docs-heading-anchor" href="#Adjacency:-the-Stokes-constants">Adjacency: the Stokes constants</a><a id="Adjacency:-the-Stokes-constants-1"></a><a class="docs-heading-anchor-permalink" href="#Adjacency:-the-Stokes-constants" title="Permalink"></a></h3><p>The Stokes constants follow from the monodromy of the Fuchsian system in the Borel plane. With <code>method = :matrix</code>, the solutions are transported numerically along keyhole contours.</p><pre><code class="language-julia hljs">K = stokes_constants(Σ, Rs, 0; T0 = T0, method = :matrix)
+K = round.(Int, real.(K))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3×3 Matrix{Int64}:
+  0  -1  1
+  1   0  1
+ -1  -1  0</code></pre><p>The entry <code>K[l, j]</code> is the Stokes constant of the transition in which saddle point <span>$j$</span> picks up saddle point <span>$l$</span>. All three pairs are adjacent. The adjacency graph in the Borel plane:</p><pre><code class="language-julia hljs">fig, ax = plotStokesGraphGM(Σ, K)
+fig</code></pre><img src="675f7382.png" alt="Example block output" width="600" height="450"/><p>The adjacency controls the divergence of the series: the late terms grow as <span>$\Gamma(m)/|F_j|^m$</span>, with <span>$F_j$</span> the distance to the nearest <em>adjacent</em> Borel singularity (<a href="../reference/#IntegralResurgence.singulants"><code>singulants</code></a>). <a href="../reference/#IntegralResurgence.divergence_rate"><code>divergence_rate</code></a> estimates <span>$|F_j|$</span> from the late terms:</p><pre><code class="language-julia hljs">[singulants(Σ, K) [divergence_rate(s.Ts) for s in trans]]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3×2 Matrix{Float64}:
+ 0.707107  0.72068
+ 0.707107  0.719524
+ 0.707107  0.719524</code></pre><h3 id="Relevance:-the-South-East-rule"><a class="docs-heading-anchor" href="#Relevance:-the-South-East-rule">Relevance: the South-East rule</a><a id="Relevance:-the-South-East-rule-1"></a><a class="docs-heading-anchor-permalink" href="#Relevance:-the-South-East-rule" title="Permalink"></a></h3><p>The exponent is bounded from below, so at <span>$\theta = \pi/2$</span> only the real saddle point is relevant. Rotating back to the oscillatory integral, the South-East rule tracks which complex saddle points are switched on along the way:</p><pre><code class="language-julia hljs">rel = relevance(f, Σ, K, T0; saddles = saddles)
+rel.n0</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{Int64}:
+ 1
+ 0
+ 0</code></pre><pre><code class="language-julia hljs">n = southeast(Σ, K, rel.n0; verbose = true)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3-element Vector{Int64}:
+ 1
+ 0
+ 1</code></pre><p>The real saddle point switches on one of the two complex saddle points, the one whose contribution is exponentially suppressed. The other complex saddle point is irrelevant.</p><h3 id="Approximations-of-the-integral"><a class="docs-heading-anchor" href="#Approximations-of-the-integral">Approximations of the integral</a><a id="Approximations-of-the-integral-1"></a><a class="docs-heading-anchor-permalink" href="#Approximations-of-the-integral" title="Permalink"></a></h3><p>The exact integral follows from a quadrature in <code>BigFloat</code> along the rotated line <span>$q = e^{i\pi/8} u$</span>, on which <span>$e^{ikq^4}$</span> decays as <span>$e^{-ku^4}$</span>; the integrand has no singularities, so the rotation does not change the integral:</p><pre><code class="language-julia hljs">const QuadGK = IntegralResurgence.QuadGK
+
+fn(u) = u^4 + u^2 / 2 + u
+function exact(k)
+    e = cis(BigFloat(π) / 8)
+    I = QuadGK.quadgk(u -&gt; exp(im * k * fn(e * u)), BigFloat(-8), BigFloat(0), BigFloat(8); rtol = big&quot;1e-60&quot;, order = 40)[1]
+    sqrt(k / (2 * BigFloat(π) * im)) * e * I
+end
+exact(big&quot;6.0&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-0.1148611265675526426664287580427179663784078672944254495464571323739728893941033 - 0.4893380385050137939422967776085721075324040391291380806839988032526932547887433im</code></pre><p>The superasymptotic approximation truncates each relevant series near its smallest term; the hyperasymptotic approximation re-expands the remainder in the series of the adjacent saddle points. With <code>k::BigFloat</code> both are evaluated in <code>BigFloat</code>; <code>rtol</code> sets the accuracy of the quadratures of the hyperasymptotic levels:</p><pre><code class="language-julia hljs">k = big&quot;6.0&quot;
+(superasymptotic = superasymptotic(trans, n, Σ, K, k).value,
+ hyperasymptotic = hyperasymptotic(trans, n, Σ, K, k; level = 1, rtol = big&quot;1e-45&quot;).value)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(superasymptotic = -0.1133054905857227990983355039425178287518767186131208008954822805658667902724367 - 0.4891343673685736056604091409312471824372961903828357552545398645496748829372384im, hyperasymptotic = -0.1148604672217493707597287338253812233871209297252279885693875755205272434755372 - 0.4893360280076098404001736705435814386731484882862181770090039165007539176966038im)</code></pre><p>The Borel–Padé sum of the relevant series provides an independent resummation, likewise in the precision of <span>$k$</span>:</p><pre><code class="language-julia hljs">borel_pade(k) = sum(n[j] * exp(im * k * im * trans[j].f₀) * BorelPadeResum(trans[j], k)[1]
+                    for j in eachindex(trans) if n[j] != 0)
+borel_pade(big&quot;6.0&quot;)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-0.1148611265675526426664287580427178969713668408033532512555329301994167967175401 - 0.489338038505013793942296777608571391119987276839752318384265943797019270331957im</code></pre><p>The errors as a function of <span>$k$</span>:</p><pre><code class="language-julia hljs">ks = 1:10
+errors = map(ks) do k
+    kb = BigFloat(k)
+    Ψ  = exact(kb)
+    (SA = abs(Ψ - superasymptotic(trans, n, Σ, K, kb).value),
+     H1 = abs(Ψ - hyperasymptotic(trans, n, Σ, K, kb; level = 1, rtol = big&quot;1e-45&quot;).value),
+     H2 = abs(Ψ - hyperasymptotic(trans, n, Σ, K, kb; level = 2, rtol = big&quot;1e-45&quot;).value),
+     BP = abs(Ψ - borel_pade(kb)))
+end
+
+fig = Figure()
+ax = Axis(fig[1, 1], xlabel = &quot;k&quot;, ylabel = &quot;|Ψ - Ψₐₚₚᵣₒₓ|&quot;, yscale = log10)
+for (key, label) in ((:SA, &quot;superasymptotic&quot;), (:H1, &quot;hyperasymptotic, level 1&quot;),
+                     (:H2, &quot;hyperasymptotic, level 2&quot;), (:BP, &quot;Borel-Padé&quot;))
+    scatterlines!(ax, collect(ks), [Float64(e[key]) for e in errors], label = label)
+end
+axislegend(ax, position = :lb)
+fig</code></pre><img src="b14e4c80.png" alt="Example block output" width="600" height="450"/><p>The exact integral is accurate to about <span>$10^{-60}$</span>, far below the errors shown. Every hyperasymptotic level improves the approximation, but here only slowly: the nearest adjacent Borel singularities lie at distance <span>$0.707$</span>, so that each level adds only <span>$0.707$</span> to the exponential rate <span>$e^{-\alpha^{(L)} k}$</span> of the error, <span>$\alpha^{(L)} = 0.707,\ 1.414,\ 2.121$</span> for <span>$L = 0, 1, 2$</span> (<a href="../reference/#IntegralResurgence.path_lengths"><code>path_lengths</code></a>). The Borel–Padé sum, which uses all 151 coefficients of the series, is far more accurate for this integral: at <span>$k = 10$</span> the errors are <span>$9.0\times10^{-5}$</span> (superasymptotic), <span>$3.6\times10^{-9}$</span> (level 1), <span>$6.0\times10^{-13}$</span> (level 2) and <span>$2.9\times10^{-40}$</span> (Borel–Padé).</p><h2 id="The-Lorentzian-lens"><a class="docs-heading-anchor" href="#The-Lorentzian-lens">The Lorentzian lens</a><a id="The-Lorentzian-lens-1"></a><a class="docs-heading-anchor-permalink" href="#The-Lorentzian-lens" title="Permalink"></a></h2><p>The one-dimensional Lorentzian lens (Sec. VII B of the paper),</p><p class="math-container">\[\Psi(k) = \sqrt{\frac{k}{2\pi i}} \int_{\mathbb{R}} e^{i k f(x)}\, \mathrm{d}x, \qquad f(x) = \frac{(x - y)^2}{2} + \frac{\beta}{1 + x^2},\]</p><p>has a rational exponent. Writing <span>$f = P/Q$</span> with <span>$P(x) = 2\beta + (1 + x^2)(x - y)^2$</span> and <span>$Q(x) = 2(1 + x^2)$</span>, a delta function and its Fourier representation lift the integral to the polynomial exponent</p><p class="math-container">\[f(x_1, x_2, x_3) = P(x_1)\, x_2 + x_3 \left(x_2\, Q(x_1) - 1\right).\]</p><h3 id="Gauss–Manin-system-and-Stokes-constants"><a class="docs-heading-anchor" href="#Gauss–Manin-system-and-Stokes-constants">Gauss–Manin system and Stokes constants</a><a id="Gauss–Manin-system-and-Stokes-constants-1"></a><a class="docs-heading-anchor-permalink" href="#Gauss–Manin-system-and-Stokes-constants" title="Permalink"></a></h3><pre><code class="language-julia hljs">using IntegralResurgence, DynamicPolynomials, MultivariatePolynomials, LinearAlgebra, CairoMakie
+setprecision(BigFloat, 512)                       # for the saddle points and the Gauss-Manin system
+
+y, β = 1, 1
+@polyvar x1 x2 x3 monomial_order = Graded{MultivariatePolynomials.Reverse{InverseLexOrder}}
+PP = 2β + (1 + x1^2) * (x1 - y)^2
+QQ = 2 * (1 + x1^2)
+f = PP * x2 + x3 * (x2 * QQ - 1)
+
+saddles = [refineSaddle(f, s)[1] for s in findAllSaddles(f)]
+GM = GaussManin(f)
+GM.ϕ</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">5-element Vector{DynamicPolynomials.Polynomial{DynamicPolynomials.Commutative{DynamicPolynomials.CreationOrder}, MultivariatePolynomials.Graded{MultivariatePolynomials.LexOrder}, Rational{BigInt}}}:
+ 1//1
+ x1
+ -1//2 + 2//1x2
+ 2//1x3 + 4//1x2 - 2//1x1
+ 4//1x1x2</code></pre><p>The lifted integral has five saddle points. In the lifted representation, the fourth basis element <span>$\phi_4 = 2x_3 + 4x_2 - 2x_1$</span> generates the asymptotic series of the one-dimensional lens. We normalise each series by its leading term <span>$1/\sqrt{f&#39;&#39;(x_j)}$</span> of the one-dimensional exponent and scale the leading vectors of the saddle solutions accordingly:</p><pre><code class="language-julia hljs">d2f(x) = 1 - 2β * (1 - 3x^2) / (1 + x^2)^3
+u = [f(p) for p in saddles]
+
+lens = map(1:GM.n) do j
+    λ, μ, Ts = asymptotic(j, GM, 160)
+    x  = saddles[argmin(abs.(u .- λ))][1]          # x₁ coordinate of the saddle point
+    T0 = 1 / sqrt(d2f(Complex{BigFloat}(x)))
+    (expansion = Expansion(x, -im * λ, μ, T0 .* Ts[4, :] ./ Ts[4, 1]),
+     v = ComplexF64.(T0 .* Ts[:, 1] ./ Ts[4, 1]))
+end
+trans = [l.expansion for l in lens]
+vs    = [l.v for l in lens]
+
+Σ  = ComplexF64[s.f₀ for s in trans]
+Rs = [ComplexF64.(R) for R in GM.Rs]
+K  = round.(Int, real.(stokes_constants(Σ, Rs, 6; vs = vs, method = :matrix)))</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">5×5 Matrix{Int64}:
+  0   0   1   1  -2
+  0   0  -1   2  -1
+ -1   1   0  -1   1
+ -1  -2   1   0   1
+  2   1  -1  -1   0</code></pre><p>All pairs of saddle points are adjacent, except for one pair:</p><pre><code class="language-julia hljs">fig, ax = plotStokesGraphGM(Σ, K)
+fig</code></pre><img src="4bff35a6.png" alt="Example block output" width="600" height="450"/><h3 id="Relevance-and-approximations"><a class="docs-heading-anchor" href="#Relevance-and-approximations">Relevance and approximations</a><a id="Relevance-and-approximations-1"></a><a class="docs-heading-anchor-permalink" href="#Relevance-and-approximations" title="Permalink"></a></h3><p>The lifted exponent is unbounded from below, so we start the South-East rule from the one-dimensional integral, in which only the real minimum of <span>$f$</span> is relevant:</p><pre><code class="language-julia hljs">n0 = [abs(imag(ComplexF64(s.x))) &lt; 1e-10 ? 1 : 0 for s in trans]
+n  = southeast(Σ, K, n0; verbose = true)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">5-element Vector{Int64}:
+ 0
+ 0
+ 1
+ 0
+ 1</code></pre><p>Besides the real saddle point (the real image of the lens), a complex saddle point contributes: an evanescent complex image.</p><p>The exact integral follows from a quadrature in <code>BigFloat</code> along the rotated line <span>$x = y + e^{i\pi/8} u$</span>, on which the Gaussian factor decays as <span>$e^{-k u^2 \sin(\pi/4)/2}$</span>; the rotation does not cross the poles <span>$x = \pm i$</span> of <span>$1/(1 + x^2)$</span>. The approximations, in <code>BigFloat</code> at 256 bits, converge to it:</p><pre><code class="language-julia hljs">setprecision(BigFloat, 256)                       # for the approximations
+const QuadGK = IntegralResurgence.QuadGK
+
+fd(x) = (x - y)^2 / 2 + β / (1 + x^2)
+function exact(k)
+    e = cis(BigFloat(π) / 8)
+    I = QuadGK.quadgk(u -&gt; exp(im * k * fd(y + e * u)), BigFloat(-25), BigFloat(0), BigFloat(25); rtol = big&quot;1e-60&quot;, order = 40)[1]
+    sqrt(k / (2 * BigFloat(π) * im)) * e * I
+end
+
+borel_pade(k) = sum(n[j] * exp(im * k * im * trans[j].f₀) * BorelPadeResum(trans[j], k; rtol = big&quot;1e-60&quot;)[1]
+                    for j in eachindex(trans) if n[j] != 0)
+
+ks = 1:15
+errors = map(ks) do k
+    kb = BigFloat(k)
+    Ψ  = exact(kb)
+    (SA = abs(Ψ - superasymptotic(trans, n, Σ, K, kb).value),
+     H1 = abs(Ψ - hyperasymptotic(trans, n, Σ, K, kb; level = 1, rtol = big&quot;1e-45&quot;).value),
+     H2 = abs(Ψ - hyperasymptotic(trans, n, Σ, K, kb; level = 2, rtol = big&quot;1e-45&quot;).value),
+     BP = abs(Ψ - borel_pade(kb)))
+end
+
+fig = Figure()
+ax = Axis(fig[1, 1], xlabel = &quot;k&quot;, ylabel = &quot;|Ψ - Ψₐₚₚᵣₒₓ|&quot;, yscale = log10)
+for (key, label) in ((:SA, &quot;superasymptotic&quot;), (:H1, &quot;hyperasymptotic, level 1&quot;),
+                     (:H2, &quot;hyperasymptotic, level 2&quot;), (:BP, &quot;Borel-Padé&quot;))
+    scatterlines!(ax, collect(ks), [Float64(e[key]) for e in errors], label = label)
+end
+axislegend(ax, position = :lb)
+fig</code></pre><img src="b3cdd1ff.png" alt="Example block output" width="600" height="450"/><p>From <span>$k \approx 4$</span> on, each hyperasymptotic level gains three to four orders of magnitude: at <span>$k = 10$</span> the errors are <span>$1.0\times10^{-5}$</span> (superasymptotic), <span>$5.6\times10^{-9}$</span> (level 1) and <span>$1.4\times10^{-12}$</span> (level 2). The Borel–Padé sum, which uses all 161 coefficients, is again far more accurate, <span>$2.6\times10^{-36}$</span> at <span>$k = 10$</span>.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../theory/">« Theory</a><a class="docs-footer-nextpage" href="../citations/">Citations »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.20.0 on <span class="colophon-date" title="Friday 6 November 2026 07:16">Friday 6 November 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
