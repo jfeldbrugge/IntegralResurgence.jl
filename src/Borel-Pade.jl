@@ -160,12 +160,23 @@ the error stalls at e^{-Re(k t_c)}, with t_c the crossing point. The ray is then
   neighbouring sector, which differs from the Borel sum in the direction -arg k by the Stokes jumps
   of the singularities in between (a warning is issued). The method
   `BorelPadeResum(transseries, j, K, k)` adds these jumps.
+A rotation is a trade: staying on the ray costs about e^{-|k| R}, with R the distance at which the ray
+meets the cut system, while rotating adds the uncompensated Stokes jumps of the Padé poles it sweeps
+across, about e^{-Re(k p)} each. When the swept poles cost more than the crossing (a cut crossed far
+out, an adjacent singularity close by), the ray stays on arg t = -arg k and a warning reports both
+scales (`guard = true`, the default; `guard = false` restores the unconditional rotation).
 The Laplace integral is computed in the precision of `k` (pass `k::BigFloat` for results beyond
 double precision). Returns `(integral, error)`.
 """
-function BorelPadeResum(trans, k; ϵ = 0.01, side = :above, rtol = sqrt(eps(real(float(k)))))
-    r = _borel_pade_ray(trans, k; ϵ = ϵ, side = side, rtol = rtol)
-    if r.width > 4ϵ
+function BorelPadeResum(trans, k; ϵ = 0.01, side = :above, rtol = sqrt(eps(real(float(k)))), guard = true)
+    r = _borel_pade_ray(trans, k; ϵ = ϵ, side = side, rtol = rtol, guard = guard)
+    if r.stayed
+        @warn "BorelPadeResum: the Laplace ray arg t = $(round(r.θ₀, digits = 3)) crosses Padé's cut " *
+              "system at |t| ≈ $(round(r.crossing, sigdigits = 3)); integrating along it all the same, since " *
+              "bending to arg t = $(round(r.θ₀ + r.rotation, digits = 3)) would sweep across Padé poles from " *
+              "|t| ≈ $(round(r.swept, sigdigits = 3)) on, whose Stokes jumps (≈ e^{-$(round(r.swept_cost, sigdigits = 3))}) " *
+              "exceed the error of the crossing (≈ e^{-$(round(r.crossing_cost, sigdigits = 3))})."
+    elseif r.width > 4ϵ
         @warn "BorelPadeResum: the Laplace ray arg t = $(round(r.θ₀, digits = 3)) crosses Padé's cut " *
               "system; integrating along arg t = $(round(r.θ₀ + r.δθ, digits = 3)) instead. This is the " *
               "Borel sum of the neighbouring sector: it differs by the Stokes jumps of the singularities " *
@@ -174,8 +185,33 @@ function BorelPadeResum(trans, k; ϵ = 0.01, side = :above, rtol = sqrt(eps(real
     return r.integral, r.error
 end
 
-# Borel-Padé sum along the Borel direction θ₀ = -arg k, rotated by δθ around Padé's cut system.
-function _borel_pade_ray(trans, k; ϵ, side, rtol)
+# Distance at which the ray arg t = θ first meets the cut system: a pole within ϵ of its direction or a
+# link that crosses it (Inf when the ray is free).
+function _cut_crossing(θ, p, links; ϵ = 0.01)
+    R = Inf
+    for q in p
+        abs(mod(angle(q) - θ + π, 2π) - π) < ϵ && (R = min(R, abs(q)))
+    end
+    e = cis(-θ)
+    for (a, b) in links
+        a, b = a * e, b * e
+        if sign(imag(a)) != sign(imag(b))
+            x = real(a) - imag(a) * (real(b) - real(a)) / (imag(b) - imag(a))
+            x > 0 && (R = min(R, x))
+        end
+    end
+    return R
+end
+
+# Padé poles swept by rotating the ray from θ₀ to θ₀ + δθ, outside the ϵ-window of the ray itself.
+function _swept_poles(p, θ₀, δθ; ϵ = 0.01)
+    σ = sign(δθ)
+    ComplexF64[q for q in p if (d = σ * (mod(angle(q) - θ₀ + π, 2π) - π); ϵ < d ≤ abs(δθ))]
+end
+
+# Borel-Padé sum along the Borel direction θ₀ = -arg k, rotated by δθ around Padé's cut system, unless the
+# rotation would sweep across poles whose Stokes jumps exceed the error of crossing the cut (`guard`).
+function _borel_pade_ray(trans, k; ϵ, side, rtol, guard = false)
     borelTransform = BorelTransform(trans.Ts, big"1")    # Tₘ tᵐ / m!
 
     order = length(trans.Ts) ÷ 2 - 1
@@ -189,13 +225,30 @@ function _borel_pade_ray(trans, k; ϵ, side, rtol)
     R = real(float(typeof(k)))
     θ₀ = -Float64(angle(k))                             # Borel direction
     δθ, width = laplace_direction(poles, zeros, θ₀; ϵ = ϵ, side = side)
+    rotation, stayed = δθ, false
+    crossing = crossing_cost = swept = swept_cost = Inf
+    if guard && δθ != 0
+        p = cut_poles(poles, zeros)
+        crossing = _cut_crossing(θ₀, p, pole_links(p); ϵ = ϵ)
+        sw = _swept_poles(p, θ₀, δθ; ϵ = ϵ)
+        if !isempty(sw)
+            kc = ComplexF64(k)
+            crossing_cost = abs(kc) * crossing
+            swept_cost = minimum(real(kc * q) for q in sw)
+            swept = minimum(abs, sw)
+            if swept_cost < crossing_cost
+                δθ, stayed = 0.0, true
+            end
+        end
+    end
     abs(δθ) < π/2 - 0.05 || error("BorelPadeResum: no pole-free Laplace direction on side $side " *
                                   "within the half-plane Re(kt) > 0")
     θ = R(θ₀ + δθ)
 
     order = R == Float64 ? 7 : 40                       # high order beyond double precision
     int, err = quadgk(t -> cis(θ) * integrand(t * cis(θ), k), zero(R), R(Inf); rtol = rtol, order = order)
-    return (integral = int, error = err, θ₀ = θ₀, δθ = δθ, width = width)
+    return (integral = int, error = err, θ₀ = θ₀, δθ = δθ, width = width, stayed = stayed, rotation = rotation,
+            crossing = crossing, crossing_cost = crossing_cost, swept = swept, swept_cost = swept_cost)
 end
 
 """

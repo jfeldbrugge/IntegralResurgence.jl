@@ -258,9 +258,11 @@ end
 
 # A Laplace ray that crosses Padé's (curved, Chebotarev) cut system: the saddle point x = -1 of x⁴/4 + x
 # has two adjacent singularities at ±0.65 - 1.125i, and for arg k = 80° the ray arg t = -80° passes
-# between them and crosses the arcs that join them. BorelPadeResum(trans, k) bends around the cuts
-# (neighbouring sector, with a warning); BorelPadeResum(transseries, j, K, k) adds the Stokes jump. Bending
-# above (around +0.65 - 1.125i) and below (around -0.65 - 1.125i) involves different jumps and must agree.
+# between them and crosses the arcs that join them. BorelPadeResum(transseries, j, K, k) bends around the
+# cuts and adds the Stokes jump. Bending above (around +0.65 - 1.125i) and below (around -0.65 - 1.125i)
+# involves different jumps and must agree. The single series cannot add the jump: unguarded, it bends and
+# lands in the neighbouring sector (off by the jump, ~1e-4); with the guard it stays on the ray, since the
+# crossing costs less than the jump, and lands within the error of the crossing (~1e-7).
 @testset "Borel-Padé around Padé's cut system" begin setprecision(BigFloat, 128) do   # fast: 41 coefficients
     progress("Borel-Padé around Padé's cut system (x⁴/4 + x)")
     @polyvar q
@@ -274,11 +276,35 @@ end
     k = 8 * cis(deg2rad(80))
     Sa, _ = BorelPadeResum(tq, j, Kq, k; side = :above, rtol = 1e-11)
     Sb, _ = BorelPadeResum(tq, j, Kq, k; side = :below, rtol = 1e-11)
-    Sbent = @test_logs (:warn, r"crosses Padé's cut system") BorelPadeResum(tq[j], k; rtol = 1e-11)[1]
+    Sbent = @test_logs (:warn, r"crosses Padé's cut system") BorelPadeResum(tq[j], k; rtol = 1e-11, guard = false)[1]
+    Sray  = @test_logs (:warn, r"integrating along it all the same") BorelPadeResum(tq[j], k; rtol = 1e-11)[1]
     @test abs(Sa - Sb) < 1e-9                                       # the two jumps differ by ~1e-4
     @test abs(Sbent - Sa) > 1e-6                                    # the Stokes jump is not negligible
+    @test abs(Sray - Sa) < 1e-6                                     # the guard: only the crossing error
     @test BorelPadeResum(tq, j, Kq, 6.0)[1] == BorelPadeResum(tq[j], 6.0)[1]   # no crossing: unchanged
 end end
+
+# A cut crossed far out against an adjacent singularity close by: the series of the forward worldline of the
+# Sauter pulse just before its Stokes line (test/data/sauter_borel_series.txt). Padé's cut system meets the
+# real ray only at |t| ≈ 7.3, while the cut of the adjacent singularity starts at 1.31 + 0.61i. Rotating
+# around the far crossing would sweep across that cut and add its Stokes jump (≈ e^{-1.31 k}); the guard
+# keeps the ray on the real axis, where the sum agrees with the Laplace integral along it.
+@testset "Laplace ray guard: far crossing, near singularity" begin setprecision(BigFloat, 256) do
+    progress("Laplace ray guard (Sauter series)")
+    lines = filter(l -> !startswith(l, "#"), readlines(joinpath(@__DIR__, "data", "sauter_borel_series.txt")))
+    a = [complex(parse(BigFloat, split(l)[1]), parse(BigFloat, split(l)[2])) for l in lines]
+    e = Expansion(nothing, 0, 0, a)
+    k = big"4.0"
+    o = length(a) ÷ 2 - 1
+    num, den = IntegralResurgence.TaylorToPade(IntegralResurgence.BorelTransform(a, big"1"), o, o)
+    ray = IntegralResurgence.quadgk(t -> k * exp(-k * t) * IntegralResurgence.PadeEvaluate(num, den, t),
+                                    big(0), big(Inf); rtol = big"1e-40", order = 40)[1]
+    v = @test_logs (:warn, r"integrating along it all the same") BorelPadeResum(e, k; rtol = big"1e-30")[1]
+    @test abs(v - ray) < 1e-30
+    w = @test_logs (:warn, r"crosses Padé's cut system") BorelPadeResum(e, k; rtol = big"1e-30", guard = false)[1]
+    @test abs(w - ray) > 1e-3                                       # the unguarded rotation picks up the jump
+end end
+
 progress("hyperlogarithms and the Stokes constants by every method")
 include("hyperlogarithms.jl")
 
