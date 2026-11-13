@@ -32,7 +32,8 @@ end
 
 """
 Stokes constant K_{j←i} for the Laplace contour of saddle i crossing the Borel singularity σ_j,
-from the keyhole contour around σ_j. `vs[a]` is the leading vector of Φ̂_a; by default it is
+from the keyhole contour around σ_j. In the convention of Berry & Howls this is K_ij, the entry
+K[i, j] of `stokes_constants`. `vs[a]` is the leading vector of Φ̂_a; by default it is
 T0[a] times the eigenvector of R_a with unit first entry. For integer Stokes constants, T0[a] should
 be the normalisation of the asymptotic series of saddle a, T0[a] = 1/√det H(x_a), ordered like Σ.
 Returns (K, S, rel_residual) with S = U₋⁻¹U₊ the keyhole holonomy and rel_residual the part of
@@ -117,10 +118,21 @@ function leading_vector(R)
     iszero(v[1]) ? v / norm(v) : v / v[1]
 end
 
-"Matrix of Stokes constants K[j, i] = K_{j←i} for all ordered pairs i ≠ j (zero on the diagonal); N may be `:auto`."
+"""
+    stokes_constants(Σ, Rs, N; kwargs...)
+
+Matrix of Stokes constants in the convention of Berry & Howls (1991): K[i, j] = K_ij is the constant
+with which the asymptotic series of saddle i sees the Borel singularity of saddle j, as in the
+late-term relation
+
+    T_N^(i) ~ 1/(2πi) Σ_j Σ_m K_ij Γ(N - m) F_ij^(m - N) T_m^(j),     F_ij = t_j - t_i,
+
+for the series normalised by `T0` (zero on the diagonal). In the keyhole notation of
+`stokes_constant`, K_ij = K_{j←i}. N may be `:auto`.
+"""
 function stokes_constants(Σ, Rs, N; kwargs...)
     n = length(Σ)
-    [i == j ? zero(ComplexF64) : stokes_constant(Σ, Rs, i, j, N; kwargs...)[1] for j in 1:n, i in 1:n]
+    [i == j ? zero(ComplexF64) : stokes_constant(Σ, Rs, i, j, N; kwargs...)[1] for i in 1:n, j in 1:n]
 end
 
 """

@@ -47,7 +47,7 @@ trans = transseries(f, GM, 60; saddles = saddles)
 T0 = ComplexF64[s.Ts[1] for s in trans]        # normalisation of the series
 Rs = [ComplexF64.(R) for R in GM.Rs]           # residues of the Fuchsian system
 
-# Adjacency: Stokes constants K[l, j] = K_{l←j}
+# Adjacency: Stokes constants K[j, l] = K_jl (Berry & Howls): the series of j sees saddle l
 K = stokes_constants(Σ, Rs, 0; T0 = T0, method = :matrix)
 fig, ax = plotStokesGraphGM(Σ, K)
 
@@ -65,6 +65,8 @@ The adjacency graph of the Pearcey integral, drawn with `plotStokesGraphGM`, sho
 <p align="center">
 <a href='docs/src/assets/figures/stokes_graph.png'><img src='docs/src/assets/figures/stokes_graph.png' width=50% /></a>
 </p>
+
+Version 2.0 changes the sign convention of the Stokes constants to that of Berry & Howls (1991): `K[j, l]` is the constant with which the series of saddle point `j` sees the Borel singularity of saddle point `l`, as in the late-term relation T_N^(j) ~ (1/2πi) Σ_l K_jl Σ_m Γ(N-m) F_jl^(m-N) T_m^(l). In version 1, `stokes_constants` returned the transpose of this matrix and `findStokesConstants` its negative; `southeast` and `relevance` no longer take a `convention` keyword, and `plotStokesGraphGM` no longer takes `from`.
 
 Please have a look at the docstrings (e.g. `?stokes_constants`) for more details. The documentation is under development.
 

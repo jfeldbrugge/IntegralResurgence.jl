@@ -93,17 +93,17 @@ end
     # certified truncation: B(N) ≥ |K_N - K| decreases with N; the first N with B(N) < 1/2 rounds exactly
     B = IR.truncation_bound(Σ, Rs, 1, 2; T0 = T0)
     @test B(2) > B(4) > B(6)
-    @test abs(K4[2, 1] - K[2, 1]) <= B(4)
+    @test abs(K4[1, 2] - K[1, 2]) <= B(4)                       # K[1, 2] = K_12 = K_{2←1}
     Bprior = IR.truncation_bound(Σ, Rs, 1, 2; T0 = T0, a_posteriori = false, sharp = false)
     @test Bprior(6) > Bprior(10) > 0
     Nstar = IR.sufficient_N(Σ, Rs, 1, 2; T0 = T0)
     @test Nstar isa Int && B(Nstar) < 1/2
     Kauto = @test_logs (:info, r"certified") stokes_constant(Σ, Rs, 1, 2, :auto; T0 = T0)[1]
-    @test round(Int, real(Kauto)) == Kint[2, 1]
+    @test round(Int, real(Kauto)) == Kint[1, 2]
     # word budget below the certified weight: falls back to the increment rule, with a warning
     Kbudget = @test_logs (:warn, r"exceeds the budget") match_mode = :any stokes_constant(Σ, Rs, 1, 2, :auto;
                                                                                     T0 = T0, max_words = 30)
-    @test round(Int, real(Kbudget[1])) == Kint[2, 1]
+    @test round(Int, real(Kbudget[1])) == Kint[1, 2]
 
     @test_throws ErrorException stokes_constant(Σ, Rs, 1, 2, 0; method = :nope)
 end end

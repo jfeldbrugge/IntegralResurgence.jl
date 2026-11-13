@@ -86,7 +86,7 @@ K = stokes_constants(Σ, Rs, 0; T0 = T0, method = :matrix)
 K = round.(Int, real.(K))
 ```
 
-The entry `K[l, j]` is the Stokes constant of the transition in which saddle point $j$ picks up saddle point $l$. All three pairs are adjacent. The adjacency graph in the Borel plane:
+The entry `K[j, l]` $= K_{jl}$ is the Stokes constant with which the series of saddle point $j$ sees the Borel singularity of saddle point $l$ (the convention of Berry & Howls); across the Stokes transition, saddle point $j$ picks up $-K_{jl}$ copies of saddle point $l$. All three pairs are adjacent. The adjacency graph in the Borel plane:
 
 ```@example pearcey
 fig, ax = plotStokesGraphGM(Σ, K)

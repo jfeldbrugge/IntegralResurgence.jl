@@ -24,9 +24,8 @@ end
 
 Stokes constants from conformally mapped Borel-Padé approximants of the series `transseries` (a vector
 of `Expansion`s). `K[j, k]` is the constant with which the series of j sees the Borel singularity of k,
-zero when no Padé pole lies within `ϵ` of the singularity in the mapped variable. With the same
-normalisation of the series, `K == -transpose(stokes_constants(...))`, i.e. `transpose(K)` follows the
-paper convention of `southeast(Σ, transpose(K), n0; convention = :paper)`.
+in the convention of Berry & Howls (1991), zero when no Padé pole lies within `ϵ` of the singularity
+in the mapped variable. With the same normalisation of the series, `K == stokes_constants(...)`.
 """
 function findStokesConstants(transseries, ϵ = 1e-2)
     K = zeros(Complex{BigFloat}, (length(transseries), length(transseries)))
@@ -48,7 +47,7 @@ function findStokesConstants(transseries, ϵ = 1e-2)
                 p = Polynomials.Polynomial(num)
                 q = Polynomials.Polynomial(den)
                 dq = Polynomials.derivative(q)
-                K[j, k] = 2im * sqrt(π) / trans_k.Ts[1] * p(pole) / dq(pole)
+                K[j, k] = -2im * sqrt(π) / trans_k.Ts[1] * p(pole) / dq(pole)
             end
         end
     end
@@ -257,14 +256,14 @@ end
 
 Borel sum of the series of saddle point j in the Borel direction arg t = -arg k, from the Borel-Padé
 sums of all series (`transseries`, a vector of `Expansion`s) and the Stokes constants K
-(`stokes_constants` convention). The series of j is summed as by `BorelPadeResum(trans, k)`; when its
+(K[j, l] = K_jl, the convention of Berry & Howls and of `stokes_constants`). The series of j is summed as by `BorelPadeResum(trans, k)`; when its
 Laplace ray has to bend around Padé's cut system from -arg k to θ, the Stokes jumps of the adjacent
 singularities in between are added:
 
-    S_j(-arg k) = S_j(θ) - σ Σ_l K[l, j] e^{-k F_l} S_l(k),     F_l = t_l - t_j,
+    S_j(-arg k) = S_j(θ) - σ Σ_l K[j, l] e^{-k F_l} S_l(k),     F_l = t_l - t_j,
 
 with σ = +1 for `side = :above` (counter-clockwise rotation) and σ = -1 for `:below`. The sum runs over
-the l with K[l, j] ≠ 0 whose directions arg F_l lie strictly between -arg k and θ (more than `ϵ` from
+the l with K[j, l] ≠ 0 whose directions arg F_l lie strictly between -arg k and θ (more than `ϵ` from
 -arg k; a singularity on the ray itself gives the lateral sum, as for a single series). The S_l are
 computed in the same way, recursively up to `depth` levels. Returns `(integral, error)`.
 """
@@ -274,14 +273,14 @@ function BorelPadeResum(transseries::AbstractVector, j::Integer, K, k; ϵ = 0.01
     value, err = r.integral, r.error
     σ = side === :above ? 1 : -1
     for l in eachindex(transseries)
-        (l == j || abs(K[l, j]) < 0.5) && continue
+        (l == j || abs(K[j, l]) < 0.5) && continue
         F = transseries[l].f₀ - transseries[j].f₀
         δ = mod(Float64(angle(F)) - r.θ₀ + π, 2π) - π
         crossed = r.δθ > 0 ? ϵ < δ < r.δθ : r.δθ < δ < -ϵ
         crossed || continue
         depth > 0 || error("BorelPadeResum: Stokes jump at singularity $l needed beyond the recursion depth")
         Sl, el = BorelPadeResum(transseries, l, K, k; ϵ = ϵ, side = side, depth = depth - 1, rtol = rtol)
-        w = K[l, j] * exp(-k * F)
+        w = K[j, l] * exp(-k * F)
         value -= σ * w * Sl
         err += abs(w) * el
     end

@@ -5,15 +5,15 @@
 # With S_j(k) = e^{-ikλ_j} (ik)^{-μ_j} Ψ^(j)(k) ~ Σ_m T_m^(j) k^{-m} and the singulants
 # F_jl = t_l - t_j (t = -iλ), the exact remainder after N terms reads
 #
-#     R_N^(j)(k) = Σ_l K_lj/(2πi) (k F_jl)^{-N} ∫_0^∞ dv v^{N-1} e^{-v} S_l(v/F_jl) / (1 - v/(k F_jl)),
+#     R_N^(j)(k) = Σ_l K_jl/(2πi) (k F_jl)^{-N} ∫_0^∞ dv v^{N-1} e^{-v} S_l(v/F_jl) / (1 - v/(k F_jl)),
 #
-# with K_lj = K[l, j] the Stokes constants in the convention of `stokes_constants` (computed with the
-# same normalisation T0 of the series). Expanding 1/(1 - v/(kF)) reproduces the late-term relation
-# T_N^(j) ≈ Σ_l K_lj/(2πi) Σ_s Γ(N-s) F_jl^{s-N} T_s^(l). Substituting for S_l its truncated series
+# with K_jl = K[j, l] the Stokes constants in the convention of Berry & Howls (1991), as returned by
+# `stokes_constants` (computed with the same normalisation T0 of the series). Expanding
+# 1/(1 - v/(kF)) reproduces the late-term relation T_N^(j) ≈ Σ_l K_jl/(2πi) Σ_s Γ(N-s) F_jl^{s-N} T_s^(l). Substituting for S_l its truncated series
 # plus its own remainder, recursively, yields the hyperasymptotic levels. At level one the
 # remainder is a sum of level-one hyperterminants,
 #
-#     R_N^(j)(k) ≈ Σ_l K_lj/(2πi) Σ_{s<N_l} T_s^(l) F_jl^s Γ(N-s) (k F_jl)^{-N} h(N - s, k F_jl),
+#     R_N^(j)(k) ≈ Σ_l K_jl/(2πi) Σ_{s<N_l} T_s^(l) F_jl^s Γ(N-s) (k F_jl)^{-N} h(N - s, k F_jl),
 #
 # with the closed form h(M, w) = -w e^{-w} E_M(-w) in terms of the generalised exponential integral,
 # equivalent to F^(1)(z; M; σ) = -e^{σz} (-z)^{M-1} Γ(M) Γ(1-M, σz) of Olde Daalhuis (Hyperterminants II,
@@ -154,13 +154,13 @@ struct HyperData{C<:Complex}
     T::Vector{Vector{C}}
     K::Matrix{Int}
 end
-adjacent(d::HyperData, j) = [l for l in eachindex(d.t) if l != j && d.K[l, j] != 0]
+adjacent(d::HyperData, j) = [l for l in eachindex(d.t) if l != j && d.K[j, l] != 0]
 
 """
     path_lengths(Σ, K, steps)
 
 Olde Daalhuis' numbers α_j^(steps-1): for every Borel singularity t_j, the length of the shortest path
-of `steps` steps t_j → t_{j_0} → … in the adjacency graph (edges j → l with K[l, j] ≠ 0, revisits
+of `steps` steps t_j → t_{j_0} → … in the adjacency graph (edges j → l with K[j, l] ≠ 0, revisits
 allowed). For steps = 1 this is the distance to the nearest adjacent singularity (`singulants`). The
 minimal remainder at hyperasymptotic level L is of the order e^{-α^(L) |k|}, attained for
 N_j = α_j^(L) |k| (Proc. R. Soc. Lond. A 454 (1998) 1, eqs. (2.14), (4.15)).
@@ -173,7 +173,7 @@ function path_lengths(Σ, K, steps)
         for _ in 1:steps
             new = fill(Inf, n)
             for y in 1:n, x in 1:n
-                (x != y && abs(K[x, y]) > 0.5 && isfinite(dist[y])) || continue
+                (x != y && abs(K[y, x]) > 0.5 && isfinite(dist[y])) || continue
                 new[x] = min(new[x], dist[y] + abs(Σ[x] - Σ[y]))
             end
             dist = new
@@ -201,7 +201,7 @@ function _remainder(d::HyperData{C}, j, κ, N, L, scale; rtol = 1e-10) where C
         w = κ * F
         Nl = min(max(0, N - ceil(Int, scale * abs(F))), length(d.T[l]))
         Nl == 0 && continue                            # beyond the accuracy of this level
-        c = d.K[l, j] / (2 * R(π) * im)
+        c = d.K[j, l] / (2 * R(π) * im)
         logw = log(w); logF = log(F)
         hs = _hyperterminants(N - Nl + 1, N, w)        # level-one hyperterminants h(N - s, w), s < Nl
         for s in 0:Nl-1
@@ -254,8 +254,8 @@ with the remainders re-expanded `level` times in terms of the series of the adja
 (`level = 0` is the superasymptotic approximation). `transseries` is the vector of `Expansion`s from
 `transseries` (a named tuple `(λ, μ, T)` per saddle point is accepted as well; `component` selects a
 row when T is a matrix), `n` from
-`relevance`, Σ are the Borel singularities and K the Stokes constants of `stokes_constants` (package
-convention K[l, j] = K_{l←j}, computed with the normalisation of `transseries`).
+`relevance`, Σ are the Borel singularities and K the Stokes constants of `stokes_constants`
+(K[j, l] = K_jl in the convention of Berry & Howls, computed with the normalisation of `transseries`).
 
 Truncation (`truncation = :daalhuis`, the default): the series of saddle j is truncated at
 N_j = ⌈α_j^(level) |k|⌉, with α_j^(level) the shortest path of level + 1 steps from t_j in the adjacency

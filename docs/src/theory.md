@@ -88,12 +88,12 @@ When the phase of $k$ rotates, the Laplace ray of saddle point $\boldsymbol{x}_j
 \mathcal{S}^+ \boldsymbol{I}^{(j)} - \mathcal{S}^- \boldsymbol{I}^{(j)} = K_{lj}\, \boldsymbol{I}^{(l)},
 ```
 
-with the integer Stokes constant $K_{lj}$. Two saddle points are *adjacent* when $K_{lj} \neq 0$. As the difference of two continuations is again a solution of the Fuchsian system, $K_{lj}$ follows from continuing the Borel transform of $\boldsymbol{x}_j$ along two keyhole paths that pass $t_l$ on either side, and comparing their difference with the Borel transform of $\boldsymbol{x}_l$ at a single point. [`stokes_constants`](@ref) evaluates all $K_{lj}$ in this way; [`plotStokesGraphGM`](@ref) draws the resulting adjacency graph.
+with the integer Stokes constant $K_{lj}$. Two saddle points are *adjacent* when $K_{lj} \neq 0$. As the difference of two continuations is again a solution of the Fuchsian system, $K_{lj}$ follows from continuing the Borel transform of $\boldsymbol{x}_j$ along two keyhole paths that pass $t_l$ on either side, and comparing their difference with the Borel transform of $\boldsymbol{x}_l$ at a single point. [`stokes_constants`](@ref) evaluates all Stokes constants in this way; [`plotStokesGraphGM`](@ref) draws the resulting adjacency graph.
 
-!!! note "Sign convention"
-    The package returns `K[l, j]` $= -K_{lj}$ with $K_{lj}$ the Stokes constants of the paper (the keyhole orientation of the package), so that the late-term relations below hold without a minus sign. The functions [`southeast`](@ref), [`superasymptotic`](@ref) and [`hyperasymptotic`](@ref) use the package convention by default.
+!!! note "Sign convention (version 2)"
+    The package follows the convention of Berry & Howls (1991): `K[j, l]` $= K_{jl}$ is the constant with which the asymptotic series of $\boldsymbol{x}_j$ sees the Borel singularity $t_l$, as in the late-term relation below. In terms of the Stokes constants of the paper, $K_{jl} = -K_{lj}^{\text{paper}}$. All functions return and accept $K$ in this convention: [`stokes_constants`](@ref), [`findStokesConstants`](@ref), [`southeast`](@ref), [`relevance`](@ref), [`superasymptotic`](@ref), [`hyperasymptotic`](@ref), [`BorelPadeResum`](@ref) and the plots. Version 1 returned the transpose of $K$ from `stokes_constants` and $-K$ from `findStokesConstants`.
 
-Alternatively, [`findStokesConstants`](@ref) estimates the Stokes constants from Borel–Padé approximants of the asymptotic series ([`findPoles`](@ref)), and [`BorelPadeResum`](@ref) resums a single series by a Laplace transform of its Padé approximant. The Padé approximant imitates the branch cuts of the Borel transform by rows of poles, which for several singularities form curved arcs. When the Laplace ray in the direction $\arg t = -\arg k$ would cross them, `BorelPadeResum` bends the ray around them, yielding the Borel sum of the neighbouring sector; `BorelPadeResum(transseries, j, K, k)` adds the Stokes jumps $K_{lj}\, e^{-k(t_l - t_j)}\, S_l(k)$ of the singularities in between and returns the Borel sum in the direction $-\arg k$.
+Alternatively, [`findStokesConstants`](@ref) estimates the Stokes constants from Borel–Padé approximants of the asymptotic series ([`findPoles`](@ref)), and [`BorelPadeResum`](@ref) resums a single series by a Laplace transform of its Padé approximant. The Padé approximant imitates the branch cuts of the Borel transform by rows of poles, which for several singularities form curved arcs. When the Laplace ray in the direction $\arg t = -\arg k$ would cross them, `BorelPadeResum` bends the ray around them, yielding the Borel sum of the neighbouring sector; `BorelPadeResum(transseries, j, K, k)` adds the Stokes jumps $K_{jl}\, e^{-k(t_l - t_j)}\, S_l(k)$ of the singularities in between and returns the Borel sum in the direction $-\arg k$.
 
 ## Approximating the integral
 
@@ -102,8 +102,10 @@ Alternatively, [`findStokesConstants`](@ref) estimates the Stokes constants from
 For an exponent bounded from below on $\mathbb{R}^d$, rotate $k \mapsto |k|\,e^{i\theta}$. At $\theta = \pi/2$ the integral is Euclidean, and exactly the real saddle points are relevant ($n_j = 1$), the complex ones not ($n_j = 0$). Rotating back to $\theta = 0$, the Borel singularities rotate clockwise, and a relevant saddle point $\boldsymbol{x}_j$ switches on the adjacent saddle point $\boldsymbol{x}_l$ when they line up horizontally (Sec. VI A):
 
 ```math
-n_l \mapsto n_l + n_j K_{lj}.
+n_l \mapsto n_l + n_j K_{lj}^{\text{paper}} = n_l - n_j K_{jl},
 ```
+
+with $K_{jl}$ = `K[j, l]` in the convention of Berry & Howls.
 
 Only edges $t_j \to t_l$ of the adjacency graph pointing South-East, $\arg(t_l - t_j) \in [-\pi/2, 0]$, contribute, ordered from steep to shallow. [`relevance`](@ref) applies the rule from start to finish; [`southeast`](@ref) applies it to given initial intersection numbers, for instance for exponents unbounded from below.
 
@@ -112,10 +114,10 @@ Only edges $t_j \to t_l$ of the adjacency graph pointing South-East, $\arg(t_l -
 The late terms of the series of $\boldsymbol{x}_j$ are governed by the adjacent saddle points (Sec. VI B),
 
 ```math
-T_m^{(j)} \approx \sum_l \frac{K_{lj}}{2\pi i} \sum_{r \geq 0} \frac{\Gamma(m - r)}{F_{jl}^{\,m-r}}\, T_r^{(l)}, \qquad F_{jl} = t_l - t_j,
+T_m^{(j)} \approx \sum_l \frac{K_{jl}}{2\pi i} \sum_{r \geq 0} \frac{\Gamma(m - r)}{F_{jl}^{\,m-r}}\, T_r^{(l)}, \qquad F_{jl} = t_l - t_j,
 ```
 
-in the package convention for `K`. The terms are smallest near $N_j \approx |k|\,\min_{l:K_{lj}\neq 0} |F_{jl}|$ ([`singulants`](@ref)). Truncating each series there yields the superasymptotic approximation [`superasymptotic`](@ref),
+with the Stokes constants $K_{jl}$ = `K[j, l]` of Berry & Howls. The terms are smallest near $N_j \approx |k|\,\min_{l:K_{jl}\neq 0} |F_{jl}|$ ([`singulants`](@ref)). Truncating each series there yields the superasymptotic approximation [`superasymptotic`](@ref),
 
 ```math
 \Psi(k) \approx \sum_j n_j\, e^{ik\lambda_j} \sum_{m=0}^{N_j - 1} \frac{T_m^{(j)}}{k^m},
@@ -128,7 +130,7 @@ with an exponentially small error. It is not the nearest singularity in the Bore
 The remainder after optimal truncation is re-expanded in the series of the adjacent saddle points (Sec. VI C),
 
 ```math
-R_N^{(j)}(k) = \sum_l \frac{K_{lj}}{2\pi i} (kF_{jl})^{-N} \int_0^\infty \frac{v^{N-1} e^{-v}}{1 - v/(kF_{jl})}\, S_l\!\left(\frac{v}{F_{jl}}\right) \mathrm{d}v,
+R_N^{(j)}(k) = \sum_l \frac{K_{jl}}{2\pi i} (kF_{jl})^{-N} \int_0^\infty \frac{v^{N-1} e^{-v}}{1 - v/(kF_{jl})}\, S_l\!\left(\frac{v}{F_{jl}}\right) \mathrm{d}v,
 ```
 
 with $S_l$ the series of $\boldsymbol{x}_l$. Truncating $S_l$ yields the first hyperasymptotic level in terms of the hyperterminant

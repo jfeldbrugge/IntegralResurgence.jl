@@ -104,7 +104,8 @@ Kpaper = [ 0  0 -1  2 -1;
     Σ  = ComplexF64[-im * s.λ for s in lens]
     Rs = [ComplexF64.(R) for R in GM.Rs]
     p  = sortperm(paper_label.(Σ))                   # p[a] = index (in GM.λs) of the saddle a of the paper
-    Kref = zeros(Int, 5, 5); Kref[p, p] = -Kpaper    # expected package Stokes constants, GM.λs order
+    # expected Stokes constants in the Berry & Howls convention, GM.λs order: K_jl = -K_lj of the paper
+    Kref = zeros(Int, 5, 5); Kref[p, p] = -permutedims(Kpaper)
 
     @testset "asymptotic series" begin
         # transseries of the lifted integral (component 1), ordered as GM.λs
@@ -132,9 +133,9 @@ Kpaper = [ 0  0 -1  2 -1;
         @test all(length(poles[j]) == 49 for j in 1:5)
         K_bp = round.(Int, real.(findStokesConstants(bp_trans)))
         # the detected edges belong to the adjacency graph of the Fuchsian system
-        # (findStokesConstants equals -transpose of stokes_constants)
+        # (findStokesConstants and stokes_constants share the Berry & Howls convention)
         @test count(!iszero, K_bp) >= 4
-        @test all((K_bp .!= 0) .<= transpose(Kref .!= 0))
+        @test all((K_bp .!= 0) .<= (Kref .!= 0))
         @test plotAdjacencyPoles(bp_trans, K_bp, poles) isa Tuple
     end
 
@@ -147,7 +148,7 @@ Kpaper = [ 0  0 -1  2 -1;
 
     @testset "Stokes constants" begin
         @test maximum(abs, Kmat - K) < 1e-10
-        @test K == Kref                                              # package convention K = -K_paper
+        @test K == Kref                                              # Berry & Howls convention
         @test K == -transpose(K)
         @test plotStokesGraphGM(Σ, K) isa Tuple
         @test plotAdjacencyGM(Σ, K) isa Tuple
@@ -166,9 +167,9 @@ Kpaper = [ 0  0 -1  2 -1;
         T0P = ComplexF64[s.Ts[1] for s in tP]
         KP = round.(Int, real.(stokes_constants(ΣP, [ComplexF64.(R) for R in GMP.Rs], 0; T0 = T0P, method = :matrix)))
         KbpP = round.(Int, real.(findStokesConstants(tP, 1e-2)))
-        @test KbpP == -transpose(KP)
+        @test KbpP == KP                                             # same convention
         nP = relevance(fP, ΣP, KP, T0P; saddles = sP)
-        @test southeast(ΣP, transpose(KbpP), nP.n0; convention = :paper) == nP.n
+        @test southeast(ΣP, KbpP, nP.n0) == nP.n
     end
 
     # ---------------------------------------------------------------- South-East rule

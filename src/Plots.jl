@@ -30,14 +30,14 @@ Requires a Makie backend: load `CairoMakie` (or `GLMakie`) first.
 function plotAdjacencyGM end
 
 """
-    plotStokesGraphGM(Σ, K; plotRange = nothing, from = :column, orient = :positive, atol = 1e-6, ...)
+    plotStokesGraphGM(Σ, K; plotRange = nothing, orient = :positive, atol = 1e-6, ...)
 
 Plot the Stokes graph in the Borel plane: the singularities Σ as points and one edge for every
-adjacent pair, labelled by its Stokes constant. K is antisymmetric (K_{i←j} = -K_{j←i}), so an
-edge carries a single number once it is given a direction.
+adjacent pair, labelled by its Stokes constant. K[i, j] = K_ij is the constant with which the series
+of i sees the singularity of j (Berry & Howls, as `stokes_constants`), the constant of the edge
+i → j. K is antisymmetric (K_ij = -K_ji), so an edge carries a single number once it is given a
+direction.
 
-- `from = :column` reads K[j, i] as K_{j←i}, the constant of the edge i → j (convention of
-  `stokes_constants`); `from = :row` reads K[i, j] as the edge i → j (as in `findStokesConstants`).
 - `orient = :positive`: each edge is drawn as an arrow i → j along the direction in which the
   Stokes constant is positive, labelled by |K|. The sign is carried by the arrow.
 - `orient = :index`: each edge points from the lower to the higher index, i → j with i < j. It is

@@ -51,7 +51,7 @@ trans = transseries(f, GM, 60; saddles = saddles)
 T0 = ComplexF64[s.Ts[1] for s in trans]        # normalisation of the series
 Rs = [ComplexF64.(R) for R in GM.Rs]           # residues of the Fuchsian system
 
-# Adjacency: Stokes constants K[l, j] = K_{l←j}
+# Adjacency: Stokes constants K[j, l] = K_jl (Berry & Howls): the series of j sees saddle l
 K = stokes_constants(Σ, Rs, 0; T0 = T0, method = :matrix)
 fig, ax = plotStokesGraphGM(Σ, K)
 

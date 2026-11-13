@@ -60,10 +60,10 @@ end
 """
     singulants(Σ, K)
 
-Distance F_j = min_{l: K[l, j] ≠ 0} |t_l - t_j| from every Borel singularity to the nearest adjacent
+Distance F_j = min_{l: K[j, l] ≠ 0} |t_l - t_j| from every Borel singularity to the nearest adjacent
 one (Inf for a saddle without adjacent saddles, whose series then converges).
 """
-singulants(Σ, K) = [minimum((abs(Σ[l] - Σ[j]) for l in eachindex(Σ) if l != j && abs(K[l, j]) > 0.5);
+singulants(Σ, K) = [minimum((abs(Σ[l] - Σ[j]) for l in eachindex(Σ) if l != j && abs(K[j, l]) > 0.5);
                             init = Inf) for j in eachindex(Σ)]
 
 """
@@ -111,8 +111,8 @@ _coefficients(s, component) = s.T isa AbstractMatrix ? s.T[component, :] : s.T
 Superasymptotic approximation Σ_j n_j e^{ikλ_j} (ik)^{μ_j} Σ_{m<N_j} T_m^(j)/k^m, with the
 `Expansion`s `transseries` from `transseries` (a named tuple `(λ, μ, T)` per saddle point is
 accepted as well; `component` selects a row when T is a matrix), intersection numbers n
-(from `relevance`), Borel singularities Σ and Stokes constants K (`stokes_constants` convention,
-only adjacency K[l, j] ≠ 0 is used).
+(from `relevance`), Borel singularities Σ and Stokes constants K (Berry & Howls convention, as
+`stokes_constants`; only the adjacency K[j, l] ≠ 0 is used).
 
 `truncation`: `:singulant` truncates at N_j = ⌈|k| F_j⌉, `:smallest` at the smallest term of each
 series, an Int at a fixed order (fixed-order asymptotics, for comparison).

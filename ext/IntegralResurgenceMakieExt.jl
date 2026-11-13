@@ -76,14 +76,13 @@ function plotAdjacencyGM(Σ, K, plotRange = 3)
     return fig, ax
 end
 
-function plotStokesGraphGM(Σ, K; plotRange = nothing, from = :column, orient = :positive, atol = 1e-6,
+function plotStokesGraphGM(Σ, K; plotRange = nothing, orient = :positive, atol = 1e-6,
         edgecolor = :red, poscolor = :royalblue, negcolor = :crimson, cplxcolor = :gray50,
         linewidth = 2, labelsize = 13, labeloffset = 9, arrowsize = 14, digits = 2, legend = true)
     n = length(Σ)
     size(K) == (n, n) || error("plotStokesGraphGM: K must be $(n)×$(n)")
-    from in (:column, :row) || error("plotStokesGraphGM: `from` must be :column or :row")
     orient in (:positive, :index) || error("plotStokesGraphGM: `orient` must be :positive or :index")
-    Kc = from === :column ? K : transpose(K)          # Kc[j, i] = constant of the edge i → j
+    Kc = transpose(K)                                 # Kc[j, i] = K_ij, the constant of the edge i → j
     maximum(abs, Kc + transpose(Kc); init = 0.0) < atol ||
         @warn "plotStokesGraphGM: K is not antisymmetric; using the entries with i < j"
     z = ComplexF64.(Σ)
@@ -105,7 +104,7 @@ function plotStokesGraphGM(Σ, K; plotRange = nothing, from = :column, orient = 
     isreal_(k) = abs(imag(k)) < atol
 
     for i in 1:n, j in i+1:n
-        k = Kc[j, i]                                   # K_{j←i}, edge i → j
+        k = Kc[j, i]                                   # K_ij, edge i → j
         abs(k) > atol || continue
         a, b = i, j
         if orient === :positive
@@ -138,7 +137,7 @@ function plotStokesGraphGM(Σ, K; plotRange = nothing, from = :column, orient = 
 
     if legend && orient === :index
         elems = [LineElement(color = poscolor, linewidth = 3), LineElement(color = negcolor, linewidth = 3)]
-        names = Any[L"K_{j \leftarrow i} > 0", L"K_{j \leftarrow i} < 0", L"K \notin \mathbb{R}"]
+        names = Any[L"K_{ij} > 0", L"K_{ij} < 0", L"K \notin \mathbb{R}"]
         if any(k -> abs(k) > atol && !isreal_(k), Kc)
             push!(elems, LineElement(color = cplxcolor, linewidth = 3))
         end
