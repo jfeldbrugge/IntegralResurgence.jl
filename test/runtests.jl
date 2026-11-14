@@ -306,6 +306,31 @@ end end
     @test abs(w - ray) > 1e-3                                       # the unguarded rotation picks up the jump
 end end
 
+@testset "Gauss-Manin system of a complex multiple, f = c g" begin
+    # the lifted Bessel exponent x + 1/x (P = 1 + x₁², Q = x₁), with real g and with c = -i
+    progress("Gauss-Manin system of a complex multiple")
+    @polyvar x₁ x₂ x₃
+    g = (1 + x₁^2) * x₂ + x₃ * (x₂ * x₁ - 1)
+    c = -im
+    GMg, GMf = GaussManin(g), GaussManin(c * g)
+    @test GMf.n == GMg.n == 2
+    perm = [argmin(abs.(GMf.λs .- c * λ)) for λ in GMg.λs]      # matching critical values
+    @test allunique(perm)
+    @test maximum(abs, GMf.λs[perm] .- c .* GMg.λs) < 1e-100
+    # the residues agree up to the choice of good basis, R → S R S⁻¹: compare their invariants
+    @test all(abs(tr(GMf.Rs[perm[j]]^2) - tr(GMg.Rs[j]^2)) < 1e-100 for j in eachindex(perm))
+    # the Stokes constants are invariant when the series are rescaled alike, T0 → c^{-1/2} T0
+    Σg = ComplexF64.(-im .* GMg.λs)
+    T0 = ComplexF64[1, -1im]
+    Kg = stokes_constants(Σg, [ComplexF64.(R) for R in GMg.Rs], 0; T0 = T0, method = :matrix)
+    Kf = stokes_constants(ComplexF64.(-im .* GMf.λs[perm]), [ComplexF64.(R) for R in GMf.Rs[perm]], 0;
+                          T0 = T0 ./ sqrt(complex(c)), method = :matrix)
+    @test maximum(abs, Kf - Kg) < 1e-8
+    @test round.(Int, abs.(Kg)) == [0 2; 2 0]
+    # coefficients that are not real up to a common factor: a clear error instead of an empty system
+    @test_throws ErrorException GaussManin(x₁^3 + im * x₁)
+end
+
 progress("hyperlogarithms and the Stokes constants by every method")
 include("hyperlogarithms.jl")
 

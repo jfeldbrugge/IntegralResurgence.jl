@@ -35,6 +35,9 @@ Write the polynomial f in Singular syntax, with the variables named x(1), ..., x
 function singular_string(f, vars = variables(f))
     term(t) = begin
         c = coefficient(t)
+        iszero(imag(c)) || error("singular_string: complex coefficient $c; Singular's gmspoly.lib works over " *
+                                 "the rationals (GaussManin handles a common complex factor)")
+        c = real(c)
         c = c isa Union{Integer, Rational} ? Rational{BigInt}(c) : rationalize(BigInt, c)
         m = join(("*x($i)^$(degree(monomial(t), v))" for (i, v) in enumerate(vars) if degree(monomial(t), v) > 0))
         "($(numerator(c))/$(denominator(c)))" * m
@@ -109,6 +112,7 @@ function goodBasis(f; check_tame = true)
     isempty(singular_lines(out, "RESURGENCE_NOTLINEAR")) || error("goodBasis: A is not of the form A0 + s*A1")
 
     Alines = singular_lines(out, "RESURGENCE_A")
+    isempty(Alines) && error("goodBasis: Singular returned no Gauss-Manin system:\n" * out)
     n = isqrt(length(Alines))
     A0 = zeros(Rational{BigInt}, n, n)
     A1 = zeros(Rational{BigInt}, n, n)
@@ -170,22 +174,45 @@ function basis_order(b; rev::Bool = false)
 end
 
 """
+    rational_scaling(f)
+
+Write the polynomial `f` as `c g`, with `g` a polynomial with rational coefficients and `c` an exact complex
+number (`c = 1` when `f` is real). Floating-point coefficients are rationalized, as in `singular_string`.
+Throws an error when the coefficients of `f` are not real up to a common complex factor.
+"""
+function rational_scaling(f)
+    exact(a) = a isa Union{Integer, Rational} ? Rational{BigInt}(a) : rationalize(BigInt, a)
+    cs = [Complex{Rational{BigInt}}(exact(real(a)), exact(imag(a))) for a in coefficients(f)]
+    all(iszero ∘ imag, cs) && return one(Rational{BigInt}), f
+    c = cs[findfirst(!iszero, cs)]
+    all(iszero(imag(a / c)) for a in cs) || error("GaussManin: the coefficients of f must be real up to a " *
+        "common complex factor, as Singular's gmspoly.lib works over the rationals")
+    g = polynomial([real(a / c) for a in cs], monomials(f))
+    return c, g
+end
+
+"""
     GaussManin(f)
 
 Gauss-Manin system of the tame polynomial `f` (Singular's `gmspoly.lib`, see `goodBasis`): the matrices M and B
 of the connection in a good basis of the Brieskorn lattice, the critical values λs (eigenvalues of M),
-the eigenvectors V, the spectral projectors Πs and the residues Rs of the Borel-plane Fuchsian system.
+the eigenvectors V, the spectral projectors Πs and the residues Rs of the Borel-plane Fuchsian system. The
+coefficients of `f` may share a common complex factor c (see `rational_scaling`): the system of c g
+follows from that of g by M → c M, with B, Πs and Rs unchanged.
 """
 function GaussManin(f)
     vars = variables(f)
     dim = length(vars)
 
-    gb = goodBasis(f)                    # t[b] = [b](A0 + s A1 + s^2 d/ds)
+    # Singular's gmspoly.lib works over ℚ: write f = c g with g rational and use the covariance of the
+    # system under f → c f (s → c s): the good basis of g, A0 → c A0, A1 unchanged
+    c, g = rational_scaling(f)
+    gb = goodBasis(g)                    # t[b] = [b](A0 + s A1 + s^2 d/ds)
     perm = basis_order(gb.b)
-    b = gb.b[perm]
+    b = isone(c) ? gb.b[perm] : [[(a / c^e[1], e) for (a, e) in p] for p in gb.b[perm]]
     n = length(b)
 
-    M = collect(transpose(gb.A0[perm, perm]))
+    M = c * collect(transpose(gb.A0[perm, perm]))
     B = collect(transpose(gb.A1[perm, perm]))
 
     # Project B - (d/2) I onto the partial fraction matrices Rⱼ: the Borel transform of k^(d/2-1) ∫ ϕ e^{ikf},
