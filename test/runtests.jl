@@ -331,6 +331,61 @@ end end
     @test_throws ErrorException GaussManin(x₁^3 + im * x₁)
 end
 
+# Two-variable quartics of type X₉ (x⁴ + a x²y² + y⁴ plus lower-order terms), with nine saddle points.
+# Their good bases have coefficients up to 10²⁵, which left the residues badly scaled (‖R‖ ~ 10²⁴)
+# and the double-precision transport useless until the residues were balanced (`residue_balance`).
+# In the second exponent, critical values far apart (t ≈ 1198i, 74i) and close together (5.5i, 5.3i,
+# 3.3i, on the same line) made the keyhole stem, shifted sideways by a large arc, run into a singular
+# point until the arcs rejoined the segment itself. Reference: Stokes constants from homotopy
+# continuation (Homotopy.jl, stokesHomotopy(f, [4, 4]; N = 4000), Morse normalisation), K[j, l] = K_jl,
+# with the saddle points ordered as Σref.
+@testset "Stokes constants of X₉ quartics (nine saddle points)" begin
+    progress("Stokes constants of two X₉ quartics")
+    @polyvar x y
+    X9 = [(x^4 + (1//2)*x^2*y^2 + y^4 - x^2 + (1//3)*y^2 + (1//5)*x*y + (1//7)*x - (1//4)*y + (1//6)*x^3 -
+           (1//9)*y^3 + (1//8)*x^2*y + (1//11)*x*y^2,
+           ComplexF64[0.014644134553120594 + 0.19015553761276302im, 0.16683307427710475 + 0.5098933768842419im,
+                      0.09526933885748153 + 0.016170430654586558im, -0.01464413455312061 + 0.19015553761276302im,
+                      -0.16683307427710478 + 0.5098933768842417im, -0.09526933885748153 + 0.01617043065458658im,
+                      0.11193446083030655im, 0.47414837076612804im, 0.028660886947170013im],
+           [ 0  0 -1  0  0  0 -1  0  0;
+             0  0  1  0  0  0  0  1  0;
+             1 -1  0  0  0 -1  0  0 -1;
+             0  0  0  0  0  1  1  0  0;
+             0  0  0  0  0 -1  0 -1  0;
+             0  0  1 -1  1  0  0  0 -1;
+             1  0  0 -1  0  0  0  0 -1;
+             0 -1  0  0  1  0  0  0 -1;
+             0  0  1  0  0  1  1  1  0]),
+          (x^4 - (3//2)*x^2*y^2 + y^4 - (5//2)*x^2 - (5//4)*y^2 - (11//4)*x - (4//9)*y - (1//3)*x^3 + 2*y^3 +
+           2*x^2*y - (4//3)*x*y^2,
+           ComplexF64[5.494597519766791im, -0.18585908872806522 - 0.8421835616070656im,
+                      0.5262110616437545 - 1.0091886364029803im, 5.256378008122809im,
+                      -0.5262110616437546 - 1.0091886364029805im, 0.1858590887280652 - 0.8421835616070655im,
+                      1197.5594919674606im, 3.2652855084749612im, 73.65628271355172im],
+           [ 0  0 -1 -1  1  0  0  0  0;
+             0  0  1 -1  1  1 -1 -1  0;
+             1 -1  0  0  0  1  0  0  0;
+             1  1  0  0  0  1  1  0  0;
+            -1 -1  0  0  0  1  0  0  0;
+             0 -1 -1 -1 -1  0  1 -1  0;
+             0  1  0 -1  0 -1  0 -1  0;
+             0  1  0  0  0  1  1  0  1;
+             0  0  0  0  0  0  0 -1  0])]
+    for (fX, Σref, Kref) in X9
+        GMX = GaussManin(fX)
+        tX = transseries(fX, GMX, 0)
+        ΣX = ComplexF64[s.f₀ for s in tX]
+        RsX = [ComplexF64.(R) for R in GMX.Rs]
+        @test maximum(opnorm, RsX) > 1e8                            # the badly scaled good basis
+        KX = stokes_constants(ΣX, RsX, 0; T0 = ComplexF64[s.Ts[1] for s in tX], method = :matrix)
+        @test maximum(abs, KX - round.(real.(KX))) < 1e-8
+        p = [argmin(abs.(Σref .- σ)) for σ in ΣX]
+        @test sort(p) == 1:9 && maximum(abs, Σref[p] - ΣX) < 1e-10
+        @test round.(Int, real.(KX)) == Kref[p, p]
+    end
+end
+
 progress("hyperlogarithms and the Stokes constants by every method")
 include("hyperlogarithms.jl")
 

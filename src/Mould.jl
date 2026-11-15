@@ -12,22 +12,57 @@
 
 """
 Keyhole paths (γ₊, γ₋) from a = σ_i + r_i e to b = σ_j + r_j e, e = (σ_j - σ_i)/|σ_j - σ_i|.
-Singular points σ_k close to the segment σ_i → σ_j are avoided by half-circles on the side on which
-the segment passes them: on the left of the directed line when σ_k lies to its right, and vice versa,
-so that the path stays homotopic to the segment and K_{j←i} = -K_{i←j}. Only a σ_k on the line
-itself (a degenerate Stokes line) is passed on the left (side = +1) or right (side = -1).
+Singular points σ_k close to the segment σ_i → σ_j are avoided by circular arcs of radius r_k on the
+side on which the segment passes them: on the left of the directed line when σ_k lies to its right,
+and vice versa, so that the path stays homotopic to the segment and K_{j←i} = -K_{i←j}. Only a σ_k
+on the line itself (a degenerate Stokes line) is passed on the left (side = +1) or right (side = -1).
+Each arc leaves and rejoins the segment itself (where the circle |t - σ_k| = r_k cuts it), so the
+straight pieces of the stem lie on the segment and pass every other σ_m at a distance ≥ r_m.
 γ₊ and γ₋ differ only around σ_j.
 """
 function keyhole_paths(Σ, i, j; npts = 12, side = 1, atol = 1e-10)
     e  = (Σ[j] - Σ[i]) / abs(Σ[j] - Σ[i]); len = abs(Σ[j] - Σ[i])
     r(k) = 0.3 * dist(Σ[k], Σ; skip = k)
-    arc(k, o) = [Σ[k] + r(k)*e*cis(o*π*(1 - m/npts)) for m in 0:npts]  # σ_k - r_k e → σ_k + r_k e
     s(k) = real(conj(e) * (Σ[k] - Σ[i]))                                # position along the line
     h(k) = imag(conj(e) * (Σ[k] - Σ[i]))                                # offset, > 0 on the left
     side_of(k) = abs(h(k)) < atol * len ? side : -Int(sign(h(k)))
+    # arc around σ_k on the side o (+1 = left) between the two points where the circle of radius
+    # r_k cuts the segment: relative to σ_k they lie at r_k e cis(oπ + φ) and r_k e cis(-φ), sin φ = h_k/r_k
+    function arc(k, o)
+        φ = k ∈ (i, j) ? 0.0 : asin(h(k) / r(k)); α0, α1 = o*π + φ, -φ
+        [Σ[k] + r(k)*e*cis(α0 + (α1 - α0)*m/npts) for m in 0:npts]
+    end
     between = [k for k in eachindex(Σ) if k ∉ (i, j) && 0 < s(k) < len && abs(h(k)) < r(k)]
     stem = [Σ[i] + r(i)*e; reduce(vcat, (arc(k, side_of(k)) for k in sort(between; by = s)); init = eltype(Σ)[])]
     [stem; arc(j, 1)], [stem; arc(j, -1)]
+end
+
+"""
+    residue_balance(Rs; sweeps = 100)
+
+Diagonal gauge d (powers of two) that balances the residues: the rows and columns of
+Σ_s |D R_s D⁻¹|, D = Diagonal(d), get comparable norms (Osborne's iteration). The good basis of the
+Brieskorn lattice can mix basis elements of very different size (coefficients up to 10²⁵ for a
+two-variable quartic of type X₉), which leaves the residues badly scaled (‖R_s‖ ~ 10²⁴); transport,
+Frobenius series and leading vectors in double precision then lose all accuracy. The constant gauge
+Y → D Y leaves the Stokes constants unchanged.
+"""
+function residue_balance(Rs; sweeps = 100)
+    C = sum(R -> abs.(R), Rs); n = size(C, 1)
+    d = ones(n)
+    for _ in 1:sweeps
+        done = true
+        for k in 1:n
+            row = sum((d[k] * C[k, l] / d[l] for l in 1:n if l != k); init = 0.0)
+            col = sum((d[l] * C[l, k] / d[k] for l in 1:n if l != k); init = 0.0)
+            (row > 0 && col > 0) || continue
+            g = exp2(round(log2(col / row) / 2))
+            g == 1 && continue
+            d[k] *= g; done = false
+        end
+        done && break
+    end
+    d
 end
 
 """
@@ -53,10 +88,31 @@ with certified truncation error |K_N - K| < 1/2 is used (`sufficient_N`, keyword
 assumes nilpotent residues (ρ = 0, the package convention). If it certifies no N ≤ Nmax, or the
 certified N would need more than `max_words` words (about n^N for n letters), it falls back to
 `stokes_constant_increment` within that budget.
+
+With `balance = true` (the default for `method = :matrix` and `:loop`), the residues are first
+brought to the balanced gauge D R_s D⁻¹ of `residue_balance` (and the leading vectors to D v); K does
+not depend on this constant gauge, and S is returned in the original gauge. Badly scaled residues
+(from a good basis with large coefficients) otherwise spoil the double-precision transport. For
+`:hyperlog` the default is `false`, so that the certified truncation (`N = :auto`) refers to the
+residues as given, as in `sufficient_N`.
 """
-function stokes_constant(Σ, Rs, i, j, N; K = 40, npts = 12, paths = keyhole_paths(Σ, i, j; npts = npts),
-                         T0 = ones(length(Σ)), vs = [T0[a] * leading_vector(Rs[a]) for a in eachindex(Rs)],
-                         method = :hyperlog, Nmax = 30, sharp = true, a_posteriori = true, max_words = 1e5)
+function stokes_constant(Σ, Rs, i, j, N; T0 = ones(length(Σ)), vs = nothing, method = :hyperlog,
+                         balance = method != :hyperlog, kwargs...)
+    if balance
+        d = residue_balance(Rs); D = Diagonal(d)
+        Rb = [D * R / D for R in Rs]
+        # leading vectors: D v, with v of unit first entry in the original gauge
+        vb = vs === nothing ? [T0[a] * d[1] * leading_vector(Rb[a]) for a in eachindex(Rs)] : [D * v for v in vs]
+        res = _stokes_constant(Σ, Rb, i, j, N; vs = vb, method = method, kwargs...)
+        res isa Tuple && length(res) == 3 || return res
+        return res[1], D \ res[2] * D, res[3]
+    end
+    _stokes_constant(Σ, Rs, i, j, N; method = method,
+                     vs = vs === nothing ? [T0[a] * leading_vector(Rs[a]) for a in eachindex(Rs)] : vs, kwargs...)
+end
+
+function _stokes_constant(Σ, Rs, i, j, N; K = 40, npts = 12, paths = keyhole_paths(Σ, i, j; npts = npts),
+                          vs, method = :hyperlog, Nmax = 30, sharp = true, a_posteriori = true, max_words = 1e5)
     if N === :auto && method == :hyperlog
         Nbudget = max_weight(length(Σ), max_words)
         Nstar = all(abs(tr(Rs[s])) < 1e-8 * max(1, opnorm(Rs[s])) for s in (i, j)) ?
